@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="84">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>Setting.h</itemPath>
+      <itemPath>Transaction.h</itemPath>
+      <itemPath>appmain.h</itemPath>
+      <itemPath>balance.h</itemPath>
+      <itemPath>cJSON.h</itemPath>
+      <itemPath>cardlessdeposit.h</itemPath>
+      <itemPath>debug2.h</itemPath>
+      <itemPath>deposit.h</itemPath>
+      <itemPath>gsm.h</itemPath>
+      <itemPath>mainmenu.h</itemPath>
+      <itemPath>moremenu.h</itemPath>
+      <itemPath>paywith.h</itemPath>
+      <itemPath>settings.h</itemPath>
+      <itemPath>systemops.h</itemPath>
+      <itemPath>ussd.h</itemPath>
+      <itemPath>withdraw.h</itemPath>
+      <itemPath>wub_lib.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>Setting.c</itemPath>
+      <itemPath>Transaction.c</itemPath>
+      <itemPath>appmain.c</itemPath>
+      <itemPath>ballance.c</itemPath>
+      <itemPath>cJSON.c</itemPath>
+      <itemPath>cardless_curlpost.c</itemPath>
+      <itemPath>cardlessdeposit.c</itemPath>
+      <itemPath>curlpost.c</itemPath>
+      <itemPath>debug2.c</itemPath>
+      <itemPath>deposit.c</itemPath>
+      <itemPath>gsm.c</itemPath>
+      <itemPath>jsonbulder.c</itemPath>
+      <itemPath>mainmenu.c</itemPath>
+      <itemPath>moremenu.c</itemPath>
+      <itemPath>paywith.c</itemPath>
+      <itemPath>settings.c</itemPath>
+      <itemPath>systemops.c</itemPath>
+      <itemPath>ussd.c</itemPath>
+      <itemPath>withdraw.c</itemPath>
+      <itemPath>wub_lib.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>NbMakefile</projectmakefile>
+  <confs>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Gnueabi|Cygwin</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <commandlineTool>arm-brcm-linux-gnueabi-gcc</commandlineTool>
+          <incDir>
+            <pElem>C:/Program Files/Castles/VEGA3000/include</pElem>
+            <pElem>C:/Program Files (x86)/Castles/VEGA3000/include</pElem>
+          </incDir>
+          <commandLine>"-I${SDKV3INC}" -fsigned-char -Wundef -Wstrict-prototypes -Wno-trigraphs -Wimplicit -Wformat</commandLine>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <commandlineTool>arm-brcm-linux-gnueabi-g++</commandlineTool>
+          <incDir>
+            <pElem>C:/Program Files/Castles/VEGA3000/include</pElem>
+            <pElem>C:/Program Files (x86)/Castles/VEGA3000/include</pElem>
+          </incDir>
+          <commandLine>"-I${SDKV3INC}" -fsigned-char -Wundef -Wno-trigraphs -Wimplicit -Wformat</commandLine>
+        </ccTool>
+        <linkerTool>
+          <output>dist/V3/App/FamDemoV1.0.0</output>
+          <commandlineTool>arm-brcm-linux-gnueabi-g++</commandlineTool>
+          <linkerLibItems>
+            <linkerLibLibItem>caethernet</linkerLibLibItem>
+            <linkerLibLibItem>cafont</linkerLibLibItem>
+            <linkerLibLibItem>cafs</linkerLibLibItem>
+            <linkerLibLibItem>cakms</linkerLibLibItem>
+            <linkerLibLibItem>calcd</linkerLibLibItem>
+            <linkerLibLibItem>camodem</linkerLibLibItem>
+            <linkerLibLibItem>capmodem</linkerLibLibItem>
+            <linkerLibLibItem>caprt</linkerLibLibItem>
+            <linkerLibLibItem>cartc</linkerLibLibItem>
+            <linkerLibLibItem>cauart</linkerLibLibItem>
+            <linkerLibLibItem>cauldpm</linkerLibLibItem>
+            <linkerLibLibItem>causbh</linkerLibLibItem>
+            <linkerLibLibItem>cagsm</linkerLibLibItem>
+            <linkerLibLibItem>cabarcode</linkerLibLibItem>
+            <linkerLibLibItem>pthread</linkerLibLibItem>
+            <linkerLibLibItem>dl</linkerLibLibItem>
+            <linkerLibLibItem>caclvw</linkerLibLibItem>
+            <linkerLibLibItem>catls</linkerLibLibItem>
+            <linkerLibLibItem>ctosapi</linkerLibLibItem>
+            <linkerLibLibItem>crypto</linkerLibLibItem>
+            <linkerLibLibItem>curl</linkerLibLibItem>
+            <linkerLibLibItem>ssl</linkerLibLibItem>
+            <linkerLibLibItem>z</linkerLibLibItem>
+            <linkerLibLibItem>freetype</linkerLibLibItem>
+            <linkerLibLibItem>caclentry</linkerLibLibItem>
+            <linkerLibLibItem>caclmdl</linkerLibLibItem>
+          </linkerLibItems>
+          <commandLine>-L . "-L${SDKV3LIB}" "-L${SDKV3LIBN}"</commandLine>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Gnueabi|Cygwin</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <commandlineTool>arm-brcm-linux-gnueabi-gcc</commandlineTool>
+          <incDir>
+            <pElem>C:/Program Files/Castles/VEGA3000/include</pElem>
+            <pElem>C:/Program Files (x86)/Castles/VEGA3000/include</pElem>
+          </incDir>
+          <commandLine>"-I${SDKV3INC}" -fsigned-char -Wundef -Wstrict-prototypes -Wno-trigraphs -Wimplicit -Wformat</commandLine>
+        </cTool>
+        <ccTool>
+          <commandlineTool>arm-brcm-linux-gnueabi-g++</commandlineTool>
+          <incDir>
+            <pElem>C:/Program Files/Castles/VEGA3000/include</pElem>
+            <pElem>C:/Program Files (x86)/Castles/VEGA3000/include</pElem>
+          </incDir>
+          <commandLine>"-I${SDKV3INC}" -fsigned-char -Wundef -Wno-trigraphs -Wimplicit -Wformat</commandLine>
+        </ccTool>
+        <linkerTool>
+          <output>dist/V3/Debug/FamDemoV1.0.0</output>
+          <commandlineTool>arm-brcm-linux-gnueabi-g++</commandlineTool>
+          <linkerLibItems>
+            <linkerLibLibItem>caethernet</linkerLibLibItem>
+            <linkerLibLibItem>cafont</linkerLibLibItem>
+            <linkerLibLibItem>cafs</linkerLibLibItem>
+            <linkerLibLibItem>cakms</linkerLibLibItem>
+            <linkerLibLibItem>calcd</linkerLibLibItem>
+            <linkerLibLibItem>camodem</linkerLibLibItem>
+            <linkerLibLibItem>capmodem</linkerLibLibItem>
+            <linkerLibLibItem>caprt</linkerLibLibItem>
+            <linkerLibLibItem>cartc</linkerLibLibItem>
+            <linkerLibLibItem>cauart</linkerLibLibItem>
+            <linkerLibLibItem>cauldpm</linkerLibLibItem>
+            <linkerLibLibItem>causbh</linkerLibLibItem>
+            <linkerLibLibItem>cagsm</linkerLibLibItem>
+            <linkerLibLibItem>cabarcode</linkerLibLibItem>
+            <linkerLibLibItem>pthread</linkerLibLibItem>
+            <linkerLibLibItem>dl</linkerLibLibItem>
+            <linkerLibLibItem>caclvw</linkerLibLibItem>
+            <linkerLibLibItem>catls</linkerLibLibItem>
+            <linkerLibLibItem>ctosapi</linkerLibLibItem>
+            <linkerLibLibItem>crypto</linkerLibLibItem>
+            <linkerLibLibItem>curl</linkerLibLibItem>
+            <linkerLibLibItem>ssl</linkerLibLibItem>
+            <linkerLibLibItem>z</linkerLibLibItem>
+            <linkerLibLibItem>freetype</linkerLibLibItem>
+          </linkerLibItems>
+          <commandLine>-L . "-L${SDKV3LIB}" "-L${SDKV3LIBN}"</commandLine>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>

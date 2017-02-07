@@ -1,0 +1,4 @@
+void ussd(void)
+{
+    return;
+}
