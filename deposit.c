@@ -27,7 +27,7 @@ BYTE g_bTxntype;
 **/
 void deposit(void)
 {
-    Do_Transaction();
+    Do_Transa2ction();
     transactionmain();
 }
 

@@ -16,7 +16,7 @@
 //#include "curlpost.h"
 #include "debug2.h"
 #include "wub_lib.h"
-
+//
 #define _SIMULATE_ONLINE_RESULT
 
 #define d_START_TRANS	0x00
@@ -476,61 +476,78 @@ void paydo_transact(void) {
         //ex : TLVDataGet(0x95, temp);
         // temp[2] |= 0x04;
         //TLVDataAdd(0x95, 5, temp);
+        
+        int i2 = 0;
+    ClearScreen(4, 14);
+    CTOS_LCDTPrintXY(3, 5, "Enter DEFAULT  PIN:");
+
+    if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
+        ClearScreen(4, 14);
+        CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+        CTOS_Delay(1000);
+        return;
+    }
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
         CVMStr = "   CVM->No CVM Req  ";
     }
     
-    
-
-    usTxResult = stRCDataAnalyze.usTransResult;
-
-    //Online
-    if (usTxResult == d_EMVCL_OUTCOME_ONL) {
-        CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
-        int validation = curlpostmain();
-        if (validation == 1) {
-            CTOS_LCDTPrintXY(1, 6, "Success ");
-            Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
-            CTOS_KBDGet(&key);
-            return;
-        } else {
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, "Failed ");
-             CTOS_KBDGet(&key);
-            return;
-        }
-        ClearScreen(4, 14);
-        //CTOS_LCDTPrintXY(1, 5, d_MSG_ONLINE);
-        //CTOS_LCDTPrintXY(1, 6, "                    ");
-
-        //Rrepare Upload Data to host
-        upload_tx_len = 0;
-
-        upload_tx_buf[upload_tx_len++] = 14;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baDateTime, 14);
-        upload_tx_len += 14;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack1Len;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack1Data, stRCDataEx.bTrack1Len);
-        upload_tx_len += stRCDataEx.bTrack1Len;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack2Len;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack2Data, stRCDataEx.bTrack2Len);
-        upload_tx_len += stRCDataEx.bTrack2Len;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen / 256;
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen % 256;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
-        upload_tx_len += stRCDataEx.usChipDataLen;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen / 256;
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen % 256;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
-        upload_tx_len += stRCDataEx.usAdditionalDataLen;
-
-        //send upload data and get the online authen result
-        usTxResult = Online_Process(upload_tx_buf, upload_tx_len);
+    int ret=curlpostmain(pin, g_baInputAmt, msg);
+    if(ret==1){;
+    CTOS_KBDGet(&key);
     }
+    else{
+        }
+
+//    usTxResult = stRCDataAnalyze.usTransResult;
+//
+//    //Online
+//    if (usTxResult == d_EMVCL_OUTCOME_ONL) {
+//        ClearScreen(4, 14);
+//        CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
+//        int validation = curlpostmain();
+//        if (validation == 1) {
+//            CTOS_LCDTPrintXY(1, 6, "Success ");
+//            Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
+//            CTOS_KBDGet(&key);
+//            return;
+//        } else {
+//            ClearScreen(4, 14);
+//            CTOS_LCDTPrintXY(1, 6, "Failed ");
+//             CTOS_KBDGet(&key);
+//            return;
+//        }
+//        ClearScreen(4, 14);
+//        //CTOS_LCDTPrintXY(1, 5, d_MSG_ONLINE);
+//        //CTOS_LCDTPrintXY(1, 6, "                    ");
+//
+//        //Rrepare Upload Data to host
+//        upload_tx_len = 0;
+//
+//        upload_tx_buf[upload_tx_len++] = 14;
+//        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baDateTime, 14);
+//        upload_tx_len += 14;
+//
+//        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack1Len;
+//        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack1Data, stRCDataEx.bTrack1Len);
+//        upload_tx_len += stRCDataEx.bTrack1Len;
+//
+//        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack2Len;
+//        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack2Data, stRCDataEx.bTrack2Len);
+//        upload_tx_len += stRCDataEx.bTrack2Len;
+//
+//        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen / 256;
+//        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen % 256;
+//        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
+//        upload_tx_len += stRCDataEx.usChipDataLen;
+//
+//        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen / 256;
+//        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen % 256;
+//        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
+//        upload_tx_len += stRCDataEx.usAdditionalDataLen;
+//
+//        //send upload data and get the online authen result
+//        usTxResult = Online_Process(upload_tx_buf, upload_tx_len);
+//    }
 
     Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
     if (NeedSignature) {
@@ -539,7 +556,7 @@ void paydo_transact(void) {
             //usTxResult = d_EMVCL_OUTCOME_DECLINED;
         }
     }
-
+    return;
     //ClearScreen(4, 14);
     CTOS_LCDTPrintXY(1, 5, msg);
 

@@ -44,6 +44,7 @@
       <itemPath>mainmenu.c</itemPath>
       <itemPath>moremenu.c</itemPath>
       <itemPath>paywith.c</itemPath>
+      <itemPath>powerautomode.c</itemPath>
       <itemPath>settings.c</itemPath>
       <itemPath>systemops.c</itemPath>
       <itemPath>ussd.c</itemPath>

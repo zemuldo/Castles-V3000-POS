@@ -54,7 +54,7 @@ void cardles_dofile(char *filename)
 struct record {const char *precision;double lat,lon;const char *address,*city,*state,*zip,*country; };
 
 
-int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
+int cardles_curlpostmain(BYTE pin[4],BYTE amount[5],  BYTE *msg) {
     
     BYTE key;
     BYTE sBuf[128];
@@ -64,11 +64,22 @@ int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
         
 	
 	
-	//build json object-string
-	root=cJSON_CreateObject();	
-	cJSON_AddItemToObject(root, "pin", cJSON_CreateString(pin));
+	root=cJSON_CreateObject();
+        cJSON_AddItemToObject(root, "username", cJSON_CreateString("familypos"));
+        cJSON_AddItemToObject(root, "password", cJSON_CreateString("password"));
+        cJSON_AddItemToObject(root, "merchantCard", cJSON_CreateString("4592530000000218"));
+        cJSON_AddItemToObject(root, "merchantCVV", cJSON_CreateString("022"));
+        cJSON_AddItemToObject(root, "recipientCard", cJSON_CreateString("32556462346"));
+        cJSON_AddItemToObject(root, "recipientCVV", cJSON_CreateString("022"));
 	cJSON_AddItemToObject(root, "amount",cJSON_CreateString(amount));
-        cJSON_AddItemToObject(root, "card_number", cJSON_CreateString("555535353535"));
+	cJSON_AddItemToObject(root, "accountnumber",cJSON_CreateString("011535272848"));
+	cJSON_AddItemToObject(root, "pin", cJSON_CreateString(pin));
+        cJSON_AddItemToObject(root, "card_number", cJSON_CreateString("4592530000000218"));
+        cJSON_AddItemToObject(root, "recipientcard_type", cJSON_CreateString(msg));
+	cJSON_AddItemToObject(root, "merchantPin",cJSON_CreateString("24523"));
+        cJSON_AddItemToObject(root, "recipientCardexpiry_date",cJSON_CreateString("24523"));
+        cJSON_AddItemToObject(root, "auth_code",cJSON_CreateString("24523"));
+	
 	
 	
 	jsonout=cJSON_Print(root);	cJSON_Delete(root);	/*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
@@ -82,7 +93,7 @@ int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
         curl = curl_easy_init();
         if (curl) {
             //char* jsonObj = "{ \"pin\" : \"4444\" , \"amount\" :\"10000\", \"card_number\" : \"72828276766262\" }"; 
-            curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/posdemo/request/card");
+            curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/bankDeposit");
             struct curl_slist *headers = NULL;
             headers = curl_slist_append(headers, "Accept: application/json");
             headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -92,10 +103,10 @@ int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
 
             /* Perform the request, res will get the return code */
              curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonout);
-            res = curl_easy_perform(curl);
+            //res = curl_easy_perform(curl);
             //CTOS_LCDTPrintXY(4, 4, " Response is");
             /* Check for errors */
-            int http_code = 0;
+            long http_code = 0;
             curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK)
                  {

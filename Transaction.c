@@ -51,6 +51,11 @@ BYTE baTemp3[256];
 BYTE baTemp4[256];
 BYTE baTmp1[256];
 
+//
+BYTE cvv[256];
+BYTE expdate[256];
+
+//
 EMVCL_ACT_DATA stACTData;
 EMVCL_RC_DATA_EX stRCDataEx;
 EMVCL_RC_DATA_ANALYZE stRCDataAnalyze;
@@ -71,7 +76,7 @@ ULONG g_ulAmt;
 ULONG g_ulCBAmt;
 BYTE g_IsHostBusy;
 char *amount;
-BYTE cardnumber[256];
+BYTE cardnumber[20];
 char *cardpin;
 
 
@@ -81,63 +86,61 @@ BYTE isSoundTurnON;
 BYTE pin[4];
 USHORT i;
 
+int enter_amount(USHORT usX, USHORT usY, BYTE isMask, BYTE *pbaStr, USHORT *usStrLen) {
+    //Declare Local Variable //
+    int i = 0;
 
-int enter_amount(USHORT usX, USHORT usY, BYTE isMask, BYTE *pbaStr, USHORT *usStrLen){
-  //Declare Local Variable //
-  int i = 0;
-  
-  memset(pbaStr,0x00,*usStrLen);
-  CTOS_LCDTPutchXY(usX, usY, '_');
-  
-  
-  while(1){
- 
-    //Scan the keyboard to detect whether a key is pressed //
-    CTOS_KBDHit(&key);
-    
-    //Cancel InputString() //
-    if (key == d_KBD_CANCEL){
-      CTOS_LCDTPutchXY(usX+i, usY, ' ');
-      memset(pbaStr,0x00,*usStrLen);
-      usStrLen = 0;
-      return 0;
-    }
-    
-    //Done input and output a string //
-    if (key == d_KBD_ENTER){
-      CTOS_LCDTPutchXY(usX+i, usY, ' ');
-      *usStrLen = strlen(pbaStr);
-      if (*usStrLen > 0) return 1;
-      else return 0;
-    }else if (key == d_KBD_CLEAR){  //Backspace //
-      CTOS_LCDTPutchXY(usX+i, usY, ' ');
-      i--;
-      pbaStr[i] = 0x00;
-      CTOS_LCDTPutchXY(usX+i, usY, '_');
-    }else if(key == d_KBD_00){	//Clear all input data //
-      memset(pbaStr,0x00,*usStrLen);
-      i = 0;
-      CTOS_LCDTGotoXY(usX+i,usY);
-      CTOS_LCDTClear2EOL();
-      CTOS_LCDTPutchXY(usX, usY, '_');
-    }
-    if (i+1 <= *usStrLen){  
-      if ((key >=0x30)&& (key <=0x39)){
-	pbaStr[i] = key;
+    memset(pbaStr, 0x00, *usStrLen);
+    CTOS_LCDTPutchXY(usX, usY, '_');
 
-	if (isMask) CTOS_LCDTPutchXY(usX+i, usY, '*');
-	else  CTOS_LCDTPutchXY(usX+i, usY, pbaStr[i]);
-	i++;
-	CTOS_LCDTPutchXY(usX+i, usY, '_');
-      }
+
+    while (1) {
+
+        //Scan the keyboard to detect whether a key is pressed //
+        CTOS_KBDHit(&key);
+
+        //Cancel InputString() //
+        if (key == d_KBD_CANCEL) {
+            CTOS_LCDTPutchXY(usX + i, usY, ' ');
+            memset(pbaStr, 0x00, *usStrLen);
+            usStrLen = 0;
+            return 0;
+        }
+
+        //Done input and output a string //
+        if (key == d_KBD_ENTER) {
+            CTOS_LCDTPutchXY(usX + i, usY, ' ');
+            *usStrLen = strlen(pbaStr);
+            if (*usStrLen > 0) return 1;
+            else return 0;
+        } else if (key == d_KBD_CLEAR) { //Backspace //
+            CTOS_LCDTPutchXY(usX + i, usY, ' ');
+            i--;
+            pbaStr[i] = 0x00;
+            CTOS_LCDTPutchXY(usX + i, usY, '_');
+        } else if (key == d_KBD_00) { //Clear all input data //
+            memset(pbaStr, 0x00, *usStrLen);
+            i = 0;
+            CTOS_LCDTGotoXY(usX + i, usY);
+            CTOS_LCDTClear2EOL();
+            CTOS_LCDTPutchXY(usX, usY, '_');
+        }
+        if (i + 1 <= *usStrLen) {
+            if ((key >= 0x30) && (key <= 0x39)) {
+                pbaStr[i] = key;
+
+                if (isMask) CTOS_LCDTPutchXY(usX + i, usY, '*');
+                else CTOS_LCDTPutchXY(usX + i, usY, pbaStr[i]);
+                i++;
+                CTOS_LCDTPutchXY(usX + i, usY, '_');
+            }
+        }
     }
-  }
-  return i;
-  
+    return i;
+
 }
 
- 
- ULONG ASCII_2Int(BYTE *baSBuf, int iL) {
+ULONG ASCII_2Int(BYTE *baSBuf, int iL) {
     unsigned long k;
     unsigned long iN;
     int i;
@@ -150,9 +153,8 @@ int enter_amount(USHORT usX, USHORT usY, BYTE isMask, BYTE *pbaStr, USHORT *usSt
     }
     return iN;
 }
- 
- 
- void ShowInput_AmountEx(BYTE bX, BYTE bY, BYTE *pAmtStr, BYTE bAmtStrLen) {
+
+void ShowInput_AmountEx(BYTE bX, BYTE bY, BYTE *pAmtStr, BYTE bAmtStrLen) {
     BYTE temp[16];
     ULONG ulTxAmount;
     char sInputAmount[20];
@@ -161,13 +163,13 @@ int enter_amount(USHORT usX, USHORT usY, BYTE isMask, BYTE *pbaStr, USHORT *usSt
     ilen = bAmtStrLen;
 
     ulTxAmount = ASCII_2Int(pAmtStr, ilen);
-    sprintf(temp, "KSH: %ld", ulTxAmount);
+    sprintf(temp, "  %ld", ulTxAmount);
     memcpy(sInputAmount, &temp[1], strlen(temp) - 1);
     CTOS_LCDTPrintXY(bX, bY, "                ");
     CTOS_LCDTPrintXY(bX, bY, temp);
 }
- 
- ULONG Input_Amount(BYTE bX, BYTE bY, BYTE* strAmt, USHORT AmtBufSize, USHORT* usAmtLen) {
+
+ULONG Input_Amount(BYTE bX, BYTE bY, BYTE* strAmt, USHORT AmtBufSize, USHORT* usAmtLen) {
     BYTE bKey;
     USHORT tempLen;
 
@@ -223,8 +225,6 @@ int enter_amount(USHORT usX, USHORT usY, BYTE isMask, BYTE *pbaStr, USHORT *usSt
 
 
 }
- 
-
 
 BYTE enter_pin(BYTE x, BYTE y, BYTE min, BYTE max, char mask, char *buf, BYTE *len) {
     BYTE ilen;
@@ -416,21 +416,22 @@ ULONG InputValue(void) {
     memset(g_baInputAmt, 0, sizeof (g_baInputAmt));
     g_usCBAmtLen = 0;
     g_usAmtLen = 0;
+    ClearScreen(4, 14);
+    CTOS_LCDTPrintXY(1, 4, "Input Amount\n");
+    CTOS_LCDTPrintXY(1, 5, "KSH: ");
+    CTOS_LCDTPrintXY(4, 5, " ");
 
-    CTOS_LCDTPrintXY(3, 3, "Input Amount\n");
-    CTOS_LCDTPrintXY(3, 4, " ");
-
-    ulRtn = Input_Amount(3, 4, g_baInputAmt, sizeof (g_baInputAmt), &g_usAmtLen);
+    ulRtn = Input_Amount(4, 5, g_baInputAmt, sizeof (g_baInputAmt), &g_usAmtLen);
     if (ulRtn != d_OK) {
         return ulRtn;
     }
 
     if (g_bTxntype == 0x09) //Cash Back
     {
-        //ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(3, 3, "Input CB Amt\n");
-        CTOS_LCDTPrintXY(3, 4, " ");
-        ulRtn = Input_Amount(3, 4, g_baInputCBAmt, sizeof (g_baInputCBAmt), &g_usCBAmtLen);
+        ClearScreen(4, 14);
+        CTOS_LCDTPrintXY(4, 4, "Input CB Amt\n");
+        CTOS_LCDTPrintXY(4, 5, " ");
+        ulRtn = Input_Amount(4, 5, g_baInputCBAmt, sizeof (g_baInputCBAmt), &g_usCBAmtLen);
         return ulRtn;
     }
 
@@ -499,15 +500,15 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     CTOS_PrinterPutString(" ");
 
     //Card Number
-     if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
         memset(baTemp, 0x00, sizeof (baTemp));
         memset(baTemp2, 0x00, sizeof (baTemp2));
         memset(baTemp3, 0x00, sizeof (baTemp3));
         memset(baTemp4, 0x00, sizeof (baTemp4));
         memcpy(baTemp, &data->baTrack2Data[1], 4);
         memcpy(baTemp2, &data->baTrack2Data[13], 4);
-         memcpy(baTemp3, &data->baTrack2Data[5], 4);
-          memcpy(baTemp4, &data->baTrack2Data[9], 4);
+        memcpy(baTemp3, &data->baTrack2Data[5], 4);
+        memcpy(baTemp4, &data->baTrack2Data[9], 4);
 
 
     } else {
@@ -517,8 +518,8 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
         baTemp2[16] = 0;
 
     }
-	
-    
+
+
     stFONT_ATTRIB.FontSize = d_FONT_8x16;
     stFONT_ATTRIB.X_Zoom = 2;
     stFONT_ATTRIB.Y_Zoom = 2;
@@ -529,16 +530,16 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     //Exp Date
     if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
         memcpy(baTemp, &data->baTrack2Data[20], 2);
-         baTemp[2] = 0;
-         memcpy(baTmp1, &data->baTrack2Data[18], 2);
-         baTmp1[2] = 0;
+        baTemp[2] = 0;
+        memcpy(baTmp1, &data->baTrack2Data[18], 2);
+        baTmp1[2] = 0;
 
 
     } else {
         memcpy(baTemp, baTmp + 19, 2);
-         baTemp[2] = 0;
-         memcpy(baTmp1, baTmp + 17, 2);
-         baTmp1[2] = 0;
+        baTemp[2] = 0;
+        memcpy(baTmp1, baTmp + 17, 2);
+        baTmp1[2] = 0;
 
     }
     sprintf(baBuf, "Exp Date   : %s/%s", baTemp, baTmp1);
@@ -599,7 +600,7 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     CTOS_PrinterPutString("================================");
 
     PrintBlank();
-    
+
 }
 //------------------------------------------------------------------------------
 
@@ -904,6 +905,9 @@ void StartTrans(BYTE bType) {
     BOOL isContactInterfaceSupport;
     BOOL isMastripeInterfaceSupport;
     BYTE key;
+
+    EMVCL_RC_DATA_EX *data;
+    BYTE isNeedSignature;
     DebugAddINT("               ", 0);
     DebugAddINT("               ", 0);
 
@@ -921,22 +925,21 @@ void StartTrans(BYTE bType) {
     memset(baAmount, 0x00, sizeof (baAmount));
     memcpy(baAmount, temp, strlen(temp));
     CTOS_LCDTPrintXY(2, 8, baAmount);
-    
-    
+
+
     CTOS_LCDTPrintXY(1, 10, " OK TO CONFIRM");
     CTOS_LCDTPrintXY(1, 12, " X TO CANCEL");
     CTOS_KBDGet(&key);
     //Amount okay Continue to Read Card
     if (key == d_KBD_ENTER) {
-       ClearScreen(4, 14);
-       CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD); 
-    }    
-    //Amount not OK, go back to re-enter
+        ClearScreen(4, 14);
+        CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD);
+    }        //Amount not OK, go back to re-enter
     else {
         return;
     }
-    
-    
+
+
 
     //EMVCL_ShowContactlessSymbol(NULL);
 
@@ -1131,7 +1134,7 @@ void StartTrans(BYTE bType) {
             msg = "     VisaWave 2    ";
             break;
         case d_VW_SID_VISA_WAVE_QVSDC:
-            msg = "   VisaWave qVSDC   ";
+            msg = "   VisaWave-qVSDC   ";
             break;
         case d_VW_SID_AE_EMV:
             msg = "   ExpressPay EMV  ";
@@ -1166,100 +1169,130 @@ void StartTrans(BYTE bType) {
     DebugAddINT("RC Analyze, Visa AOSA Present", stRCDataAnalyze.bVisaAOSAPresent);
     DebugAddHEX("RC Analyze, Visa AOSA", stRCDataAnalyze.baVisaAOSA, sizeof (stRCDataAnalyze.baVisaAOSA));
     DebugAddINT("RC Analyze, ODA Fail", stRCDataAnalyze.bODAFail);
-
+    ClearScreen(4, 14);
+    CTOS_LCDTPrintXY(1, 4, "Checking Card CVM :");
+    CTOS_Delay(2000);
     //After parsing transaction data, check if CVM is need and get the transaction result	
     //CVM Require - If Card need CVM, performing CVM at this moment
-    //NeedSignature = FALSE;
-    //CVMStr = "                    ";
+    NeedSignature = FALSE;
+    CVMStr = "                    ";
 
-//    if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_SIGNATURE) {
-//        CVMStr = "   CVM->Signature  ";
-//        NeedSignature = TRUE;
-//
-//    } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_ONLPIN) {
-//        CVMStr = "     CVM->PIN      ";
-//        ClearScreen(4, 14);
-//        CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
-//
-//        if (Get_PIN_Input(1, 5, 4, 16, '*', pin, &pin_len) == FALSE) {
-//            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
-//            CTOS_Delay(1000);
-//            return;
-//        }
-//
-//        //set TVR byte 3 if need
-//        //ex : TLVDataGet(0x95, temp);
-//        // temp[2] |= 0x04;
-//        //TLVDataAdd(0x95, 5, temp);
-//    } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
-//        CVMStr = "   CVM->No CVM Req  ";
-//    }
-     
-    
+    if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_SIGNATURE) {
+        CVMStr = "   CVM->Signature  ";
+        NeedSignature = TRUE;
+        CTOS_LCDTPrintXY(1, 4, "SIGNATURE CVM MODE ");
+        CTOS_Delay(1000);
+
+    } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_ONLPIN) {
+        CVMStr = "     CVM->PIN      ";
+        ClearScreen(4, 14);
+        CTOS_LCDTPrintXY(1, 4, "PIN CVM MODE ");
+        CTOS_Delay(1000);
+        int i2 = 0;
+        CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
+
+        if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
+            ClearScreen(4, 14);
+            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            CTOS_Delay(1000);
+            return;
+        }
+
+        //set TVR byte 3 if need
+ex:
+        TLVDataGet(0x95, temp);
+        temp[2] |= 0x04;
+        TLVDataAdd(0x95, 5, temp);
+    } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
+        CVMStr = "   CVM->No CVM Req  ";
+        ClearScreen(4, 14);
+        CTOS_LCDTPrintXY(1, 4, "NO CVM REQUIRED ");
+        CTOS_Delay(1000);
+    }
+
+
     // TODO: Add your program here //
-    
-    int i2 = 0;
 
-    CTOS_LCDTPrintXY(3, 5, "Enter PIN:");
+    int i2 = 0;
+    ClearScreen(4, 14);
+    CTOS_LCDTPrintXY(3, 5, "Enter DEFAULT  PIN:");
 
     if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
+        ClearScreen(4, 14);
         CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
         CTOS_Delay(1000);
         return;
     }
+//
+//    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+//        memset(baTemp, 0x00, sizeof (baTemp));
+//        memset(baTemp2, 0x00, sizeof (baTemp2));
+//        memset(baTemp3, 0x00, sizeof (baTemp3));
+//        memset(baTemp4, 0x00, sizeof (baTemp4));
+//        memset(cardnumber, 0x00, sizeof (cardnumber));
+//        memcpy(baTemp, &data->baTrack2Data[1], 4);
+//        memcpy(baTemp2, &data->baTrack2Data[13], 4);
+//        memcpy(baTemp3, &data->baTrack2Data[5], 4);
+//        memcpy(baTemp4, &data->baTrack2Data[9], 4);
+//        memcpy(cardnumber, &data->baTrack2Data[1], 16);
+//
+//
+//
+//    } else {
+//        UnpackData(data->baTrack2Data, 20, baTmp);
+//        memcpy(baTemp, baTmp, 4);
+//        memcpy(baTemp2, &baTmp[12], 4);
+//        baTemp2[16] = 0;
+//
+//    }
+    int ret=curlpostmain(pin, g_baInputAmt, msg);
+    if(ret==1){;
+    CTOS_KBDGet(&key);
+    }
+    else{
+        }
 
-//    curlpostmain(pin, g_baInputAmt);
-//    CTOS_KBDGet(&key);
-//    return;
-//    
 
     usTxResult = stRCDataAnalyze.usTransResult;
-CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
+    //ClearScreen(4, 14);
+    //CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
     //Online
     if (usTxResult == d_EMVCL_OUTCOME_ONL) {
-        
-        int validation = curlpostmain(pin, g_baInputAmt);
-        if (validation == 1) {
-            CTOS_LCDTPrintXY(1, 6, "Success ");
-            Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
-            return;
-        } else {
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, "Failed ");
-             CTOS_KBDGet(&key);
-            return;
-        }
-        ClearScreen(4, 14);
-        //CTOS_LCDTPrintXY(1, 5, d_MSG_ONLINE);
-        //CTOS_LCDTPrintXY(1, 6, "                    ");
 
-        //Rrepare Upload Data to host
-        upload_tx_len = 0;
+        //curlpostmain(pin, g_baInputAmt);
 
-        upload_tx_buf[upload_tx_len++] = 14;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baDateTime, 14);
-        upload_tx_len += 14;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack1Len;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack1Data, stRCDataEx.bTrack1Len);
-        upload_tx_len += stRCDataEx.bTrack1Len;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack2Len;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack2Data, stRCDataEx.bTrack2Len);
-        upload_tx_len += stRCDataEx.bTrack2Len;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen / 256;
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen % 256;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
-        upload_tx_len += stRCDataEx.usChipDataLen;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen / 256;
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen % 256;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
-        upload_tx_len += stRCDataEx.usAdditionalDataLen;
-
-        //send upload data and get the online authen result
-        usTxResult = Online_Process(upload_tx_buf, upload_tx_len);
+        //        
+        //        ClearScreen(4, 14);
+        //        //CTOS_LCDTPrintXY(1, 5, d_MSG_ONLINE);
+        //        //CTOS_LCDTPrintXY(1, 6, "                    ");
+        //
+        //        //Rrepare Upload Data to host
+        //        upload_tx_len = 0;
+        //
+        //        upload_tx_buf[upload_tx_len++] = 14;
+        //        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baDateTime, 14);
+        //        upload_tx_len += 14;
+        //
+        //        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack1Len;
+        //        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack1Data, stRCDataEx.bTrack1Len);
+        //        upload_tx_len += stRCDataEx.bTrack1Len;
+        //
+        //        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack2Len;
+        //        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack2Data, stRCDataEx.bTrack2Len);
+        //        upload_tx_len += stRCDataEx.bTrack2Len;
+        //
+        //        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen / 256;
+        //        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen % 256;
+        //        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
+        //        upload_tx_len += stRCDataEx.usChipDataLen;
+        //
+        //        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen / 256;
+        //        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen % 256;
+        //        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
+        //        upload_tx_len += stRCDataEx.usAdditionalDataLen;
+        //
+        //        //send upload data and get the online authen result
+        //        usTxResult = Online_Process(upload_tx_buf, upload_tx_len);
     }
 
     Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
@@ -1267,9 +1300,10 @@ CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
         bStatus = SignatureProcessing();
         if (bStatus != 0) {
             //usTxResult = d_EMVCL_OUTCOME_DECLINED;
+            return;
         }
     }
-
+    return;
     //ClearScreen(4, 14);
     CTOS_LCDTPrintXY(1, 5, msg);
 
