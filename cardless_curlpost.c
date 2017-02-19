@@ -54,7 +54,7 @@ void cardles_dofile(char *filename)
 struct record {const char *precision;double lat,lon;const char *address,*city,*state,*zip,*country; };
 
 
-int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
+int cardles_curlpostmain(BYTE amount[5],BYTE accountNo[256]) {
     
     BYTE key;
     BYTE sBuf[128];
@@ -66,9 +66,9 @@ int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
 	
 	//build json object-string
 	root=cJSON_CreateObject();	
-	cJSON_AddItemToObject(root, "pin", cJSON_CreateString(pin));
-	cJSON_AddItemToObject(root, "amount",cJSON_CreateString(amount));
-        cJSON_AddItemToObject(root, "card_number", cJSON_CreateString("555535353535"));
+	cJSON_AddItemToObject(root, "amount", cJSON_CreateString(amount));
+	cJSON_AddItemToObject(root, "accountNo",cJSON_CreateString(accountNo));
+        //cJSON_AddItemToObject(root, "card_number", cJSON_CreateString("555535353535"));
 	
 	
 	jsonout=cJSON_Print(root);	cJSON_Delete(root);	/*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
@@ -92,10 +92,10 @@ int cardles_curlpostmain(BYTE pin[4],BYTE amount[5]) {
 
             /* Perform the request, res will get the return code */
              curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonout);
-            res = curl_easy_perform(curl);
+            //res = curl_easy_perform(curl);
             //CTOS_LCDTPrintXY(4, 4, " Response is");
             /* Check for errors */
-            int http_code = 0;
+            long http_code = 0;
             curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK)
                  {

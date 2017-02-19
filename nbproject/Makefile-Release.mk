@@ -35,7 +35,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/accoutopening.o \
 	${OBJECTDIR}/curlpost.o \
+	${OBJECTDIR}/powerautomode.o \
 	${OBJECTDIR}/withdraw.o \
 	${OBJECTDIR}/paywith.o \
 	${OBJECTDIR}/cJSON.o \
@@ -81,9 +83,17 @@ dist/V3/App/FamDemoV1.0.0.exe: ${OBJECTFILES}
 	${MKDIR} -p dist/V3/App
 	arm-brcm-linux-gnueabi-g++ -L . "-L${SDKV3LIB}" "-L${SDKV3LIBN}" -o dist/V3/App/FamDemoV1.0.0  ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
+${OBJECTDIR}/accoutopening.o: accoutopening.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -O2 -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/accoutopening.o accoutopening.c
+
 ${OBJECTDIR}/curlpost.o: curlpost.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -O2 -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/curlpost.o curlpost.c
+
+${OBJECTDIR}/powerautomode.o: powerautomode.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -O2 -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/powerautomode.o powerautomode.c
 
 ${OBJECTDIR}/withdraw.o: withdraw.c 
 	${MKDIR} -p ${OBJECTDIR}

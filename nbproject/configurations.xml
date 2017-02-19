@@ -31,6 +31,7 @@
                    projectFiles="true">
       <itemPath>Setting.c</itemPath>
       <itemPath>Transaction.c</itemPath>
+      <itemPath>accoutopening.c</itemPath>
       <itemPath>appmain.c</itemPath>
       <itemPath>ballance.c</itemPath>
       <itemPath>cJSON.c</itemPath>
@@ -44,6 +45,7 @@
       <itemPath>mainmenu.c</itemPath>
       <itemPath>moremenu.c</itemPath>
       <itemPath>paywith.c</itemPath>
+      <itemPath>powerautomode.c</itemPath>
       <itemPath>settings.c</itemPath>
       <itemPath>systemops.c</itemPath>
       <itemPath>ussd.c</itemPath>

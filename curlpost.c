@@ -95,7 +95,7 @@ int curlpostmain(BYTE pin[4],BYTE amount[5]) {
             res = curl_easy_perform(curl);
             //CTOS_LCDTPrintXY(4, 4, " Response is");
             /* Check for errors */
-            int http_code = 0;
+            long http_code = 0;
             curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK)
                  {

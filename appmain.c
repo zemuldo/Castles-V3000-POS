@@ -1,3 +1,10 @@
+/* 
+ * File:   main.c
+ * Author: Danstan
+ *
+ * Created on February 17, 2017, 12:28 PM
+ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +26,8 @@
 #include "paywith.h"
 BYTE key;
 
+BYTE StandbybMode=d_PWR_STANDBY_MODE;
+BYTE SleepbMode=d_PWR_SLEEP_MODE;
 BOOL CancelTransactionEvent(void)
 {
 	BYTE k;
@@ -74,12 +83,13 @@ void transactionmain(void) {
 
             ClearScreen(4, 14);
             ShowTitle("   AGENT MENU           ");
-            CTOS_LCDTPrintXY(2, 5, "1. CASH WITHDRAW");
+            CTOS_LCDTPrintXY(2, 5, "1. WITHDRAW");
             CTOS_LCDTPrintXY(2, 6, "2. CARD DEPOSIT");
-            CTOS_LCDTPrintXY(2, 7, "3. CARDLESS DPOSIT");
+            CTOS_LCDTPrintXY(2, 7, "3. DEPOSIT NO CARD");
             CTOS_LCDTPrintXY(2, 8, "4. PAY BILL");
             CTOS_LCDTPrintXY(2, 9, "5. PAY FEE");
-            CTOS_LCDTPrintXY(1, 10, "              X-Exit");
+            CTOS_LCDTPrintXY(2, 10, "6. Creat Accnt");
+            CTOS_LCDTPrintXY(1, 11, "              X-Exit");
 
             CTOS_KBDGet(&key);
 
@@ -103,6 +113,9 @@ void transactionmain(void) {
                     payfee();
                     break;
                     
+                case '6':
+                    create_account();
+                    break;
                 case d_KBD_CANCEL:
                     loginwithpin();
                     break;
@@ -132,6 +145,8 @@ STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 BYTE baBuff[256];
 
 void loginwithpin(void) {
+    
+    CTOS_PowerAutoModeEnable();
     ClearScreen(4, 14);
     ShowTitle("AGENCY BANKING DEMO    ");
     CTOS_LCDTPrintXY(3, 5, "1. Transaction");
@@ -140,14 +155,13 @@ void loginwithpin(void) {
     CTOS_LCDTPrintXY(3, 8, "4. Restart");
     CTOS_LCDTPrintXY(3, 9, "5. Settings");
     CTOS_LCDTPrintXY(1, 15, "              X-Exit");
-
     CTOS_KBDGet(&key);
     switch (key) {
         case d_KBD_1:
             transactionmain();
             break;
         case d_KBD_2:
-            return;
+            sleepmode();
             break;
         case d_KBD_3:
             CTOS_PowerOff();

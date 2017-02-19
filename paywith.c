@@ -16,7 +16,7 @@
 //#include "curlpost.h"
 #include "debug2.h"
 #include "wub_lib.h"
-
+//
 #define _SIMULATE_ONLINE_RESULT
 
 #define d_START_TRANS	0x00

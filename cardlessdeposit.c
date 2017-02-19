@@ -156,6 +156,7 @@ void do_transact(void) {
     STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
         ""};
     BYTE baBuff[256];
+    BYTE accountNo[256];
 
     // amount - ascii to int
     g_ulAmt = ASCII2Int(g_baInputAmt, g_usAmtLen);
@@ -198,17 +199,7 @@ void do_transact(void) {
         return;
     }
 CTOS_LCDTPrintXY(2, 6, " Processing...");
-    int validation = curlpostmain();
-    if (validation == 1) {
-        CTOS_LCDTPrintXY(1, 8, "   Successful");
-        printreceipt();
-        CTOS_KBDGet(&key);
-    } else {
-        ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(1, 8, "   Failed ");
-        CTOS_KBDGet(&key);
-        return;
-    }
+    cardles_curlpostmain(baAmount,baBuff);
    
 
 }
