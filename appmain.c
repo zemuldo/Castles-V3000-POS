@@ -25,107 +25,108 @@
 #include "deposit.h"
 #include "paywith.h"
 BYTE key;
+BYTE temppassword[8];
+BYTE password[8] = {'f', 'a', 'm', 'i', 'l', 'y', 'b', '\0'};
+BYTE passretrycheck[4];
+BYTE loggin[2];
 
-BYTE StandbybMode=d_PWR_STANDBY_MODE;
-BYTE SleepbMode=d_PWR_SLEEP_MODE;
-BOOL CancelTransactionEvent(void)
-{
-	BYTE k;
-	
-	CTOS_KBDHit(&k);
-	
-	if(k == '1')
-	{
-		return TRUE;
-	}
-	
-	return FALSE;
+BYTE StandbybMode = d_PWR_STANDBY_MODE;
+BYTE SleepbMode = d_PWR_SLEEP_MODE;
+
+BOOL CancelTransactionEvent(void) {
+    BYTE k;
+
+    CTOS_KBDHit(&k);
+
+    if (k == '1') {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
-void ShowMessageEvent(BYTE bKernel, EMVCL_USER_INTERFACE_REQ_DATA *stUserInterfaceRequestData)
-{
-	DebugAddSTR("Enter Show Message Event");
-	
-	DebugAddINT("Current Kernel", bKernel);
-	DebugAddHEX("Usr Req Data", (BYTE*)stUserInterfaceRequestData, sizeof(EMVCL_USER_INTERFACE_REQ_DATA));
+void ShowMessageEvent(BYTE bKernel, EMVCL_USER_INTERFACE_REQ_DATA *stUserInterfaceRequestData) {
+    DebugAddSTR("Enter Show Message Event");
+
+    DebugAddINT("Current Kernel", bKernel);
+    DebugAddHEX("Usr Req Data", (BYTE*) stUserInterfaceRequestData, sizeof (EMVCL_USER_INTERFACE_REQ_DATA));
 }
 
 EMVCL_INIT_DATA emvcl_initdat;
 
 void transactionmain(void) {
-   BYTE bKey;
-	ULONG ulRtn;
-	
-	CTOS_LCDTClearDisplay();
-	CTOS_LCDSelectMode(0x04);
-	CTOS_LCDTSelectFontSize(d_FONT_16x30);
+    BYTE bKey;
+    ULONG ulRtn;
 
-	DebugInit();
-	
-	emvcl_initdat.stOnEvent.OnCancelTransaction = NULL;
-	//emvcl_event.OnCancelTransaction = CancelTransactionEvent;
-	//emvcl_initdat.stOnEvent.OnShowMessage = NULL;
-	emvcl_initdat.stOnEvent.OnShowMessage = ShowMessageEvent;
-	emvcl_initdat.bConfigFilenameLen = strlen("V3CLVpTP_config.xml");
-	emvcl_initdat.pConfigFilename = "V3CLVpTP_config.xml";
-	ulRtn = EMVCL_Initialize(&emvcl_initdat);
-	if(ulRtn != 0) 
-	{
-		ShowRtn(3, "EMVCL Init Fail ", ulRtn);
-		CTOS_KBDGet(&bKey);
-		return;
-	}
-	
-	EMVCL_ShowVirtualLED(NULL);
-	EMVCL_SetLED(0x0F, 0x08);
-    
+    CTOS_LCDTClearDisplay();
+    CTOS_LCDSelectMode(0x04);
+    CTOS_LCDTSelectFontSize(d_FONT_16x30);
+
+    DebugInit();
+
+    emvcl_initdat.stOnEvent.OnCancelTransaction = NULL;
+    //emvcl_event.OnCancelTransaction = CancelTransactionEvent;
+    //emvcl_initdat.stOnEvent.OnShowMessage = NULL;
+    emvcl_initdat.stOnEvent.OnShowMessage = ShowMessageEvent;
+    emvcl_initdat.bConfigFilenameLen = strlen("V3CLVpTP_config.xml");
+    emvcl_initdat.pConfigFilename = "V3CLVpTP_config.xml";
+    ulRtn = EMVCL_Initialize(&emvcl_initdat);
+    if (ulRtn != 0) {
+        ShowRtn(3, "EMVCL Init Fail ", ulRtn);
+        CTOS_KBDGet(&bKey);
+        return;
+    }
+
+    EMVCL_ShowVirtualLED(NULL);
+    EMVCL_SetLED(0x0F, 0x08);
+
     while (1) {
 
-            ClearScreen(4, 14);
-            ShowTitle("   AGENT MENU           ");
-            CTOS_LCDTPrintXY(2, 5, "1. WITHDRAW");
-            CTOS_LCDTPrintXY(2, 6, "2. CARD DEPOSIT");
-            CTOS_LCDTPrintXY(2, 7, "3. DEPOSIT NO CARD");
-            CTOS_LCDTPrintXY(2, 8, "4. PAY BILL");
-            CTOS_LCDTPrintXY(2, 9, "5. PAY FEE");
-            CTOS_LCDTPrintXY(2, 10, "6. Creat Accnt");
-            CTOS_LCDTPrintXY(1, 11, "              X-Exit");
+        ClearScreen(4, 14);
+        ShowTitle("   AGENT MENU           ");
+        CTOS_LCDTPrintXY(2, 5, "1. WITHDRAW");
+        CTOS_LCDTPrintXY(2, 6, "2. CARD DEPOSIT");
+        CTOS_LCDTPrintXY(2, 7, "3. DEPOSIT NO CARD");
+        CTOS_LCDTPrintXY(2, 8, "4. PAY BILL");
+        CTOS_LCDTPrintXY(2, 9, "5. PAY FEE");
+        CTOS_LCDTPrintXY(2, 10, "6. Creat Accnt");
+        CTOS_LCDTPrintXY(1, 11, "              X-Exit");
 
-            CTOS_KBDGet(&key);
+        CTOS_KBDGet(&key);
 
-            switch (key) {
-                case '1':
-                    withdraw();
-                    break;
+        switch (key) {
+            case '1':
+                withdraw();
+                break;
 
-                case '2':
-                    deposit();
-                    break;
+            case '2':
+                deposit();
+                break;
 
-                case '3':
-                    cardlessdeposit();
-                    break;
-                case '4':
-                    paybill();
-                    break;
+            case '3':
+                cardlessdeposit();
+                break;
+            case '4':
+                paybill();
+                break;
 
-                case '5':
-                    payfee();
-                    break;
-                    
-                case '6':
-                    create_account();
-                    break;
-                case d_KBD_CANCEL:
-                    loginwithpin();
-                    break;
+            case '5':
+                payfee();
+                break;
 
-
-            }
+            case '6':
+                create_account();
+                break;
+            case d_KBD_CANCEL:
+                loginwithpin();
+                break;
 
 
         }
-    
+
+
+    }
+
 }
 
 
@@ -144,8 +145,41 @@ STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
     ""};
 BYTE baBuff[256];
 
+int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
+    int i;
+    for (i = 1; i <= n; i++) {
+
+        if (inpass[i] == tempass[i]) return 1;
+        // better:
+        // if(fabs(a[ii]-b[ii]) < 1e-10 * (fabs(a[ii]) + fabs(b[ii]))) {
+        // with the appropriate tolerance
+    }
+    return 0;
+}
+
 void loginwithpin(void) {
-    
+    CTOS_LCDTClearDisplay();
+    //Check if session is active
+    if (loggin[1] != '1') {
+        CTOS_LCDTPrintXY(4, 5, "Enter Password");
+        CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
+        if (strcmp(temppassword, password) != 0) {
+            CTOS_LCDTClearDisplay();
+            CTOS_LCDTPrintXY(3, 5, "Wrong Password");
+            CTOS_LCDTPrintXY(3, 6, "   !!!!!");
+            CTOS_Delay(1000);
+
+            exit(0);
+        } else {
+            loggin[1] = '1';
+            exit;
+        }
+    }
+    else {
+        exit;
+    }
+    //National ID
+
     CTOS_PowerAutoModeEnable();
     ClearScreen(4, 14);
     ShowTitle("AGENCY BANKING DEMO    ");
@@ -181,6 +215,7 @@ void loginwithpin(void) {
 }
 
 int main(int argc, char *argv[]) {
+    loggin[1] = '0';
     loginwithpin();
 
     exit(0);

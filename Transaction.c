@@ -1012,7 +1012,7 @@ void StartTrans(BYTE bType) {
                     CTOS_SCStatus(d_SC_USER, &bStatus);
 
                     if ((bStatus & d_MK_SC_PRESENT)) {
-                        // Check the ICC Card is inserted 
+                        // Check the CHIP Card is inserted 
                         ClearScreen(4, 14);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
