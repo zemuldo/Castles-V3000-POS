@@ -52,8 +52,11 @@ BYTE baTemp4[256];
 BYTE baTmp1[256];
 
 //
-BYTE cvv[256];
-BYTE expdate[256];
+BYTE cvv[3];
+BYTE expdate[6];
+BYTE cardtype[255];
+BYTE cardnumber[17];
+BYTE cardvendor[255];
 
 //
 EMVCL_ACT_DATA stACTData;
@@ -75,8 +78,7 @@ BYTE g_bTxntype;
 ULONG g_ulAmt;
 ULONG g_ulCBAmt;
 BYTE g_IsHostBusy;
-char *amount;
-BYTE cardnumber[256];
+BYTE amount[5];
 char *cardpin;
 
 
@@ -467,17 +469,7 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     }
     CTOS_PrinterPutString(baBuf);
 
-    PrintBlank();
 
-   
-    sprintf(baBuf, "Data is: %s ", data);
-    CTOS_PrinterPutString(baBuf);
-    
-    sprintf(baBuf, "tryryryryryryry");
-    CTOS_PrinterPutString(baBuf);
-    
-    sprintf(baBuf, "Credit Card");
-    CTOS_PrinterPutString(baBuf);
     //Store ID
     sprintf(baBuf, "Store ID    :      8220101400255");
     CTOS_PrinterPutString(baBuf);
@@ -605,6 +597,131 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     CTOS_PrinterPutString("================================");
 
     PrintBlank();
+
+}
+
+void getcarddata(EMVCL_RC_DATA_EX *data/*,BYTE *tmpcardtype,BYTE *tmpcarvendor,BYTE tmpcardnumber[17], BYTE tmpcvv*/) {
+    CTOS_FONT_ATTRIB stFONT_ATTRIB;
+
+    char *tmp;
+    //Card Type
+
+    if (data->bSID == d_VW_SID_PAYPASS_MAG_STRIPE || data->bSID == d_VW_SID_PAYPASS_MCHIP) {
+
+        tmp = "Master PayPass";
+        memset(cardtype, 0x00, sizeof (cardtype));
+        memcpy(cardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_AE_EMV || data->bSID == d_VW_SID_AE_MAG_STRIPE) {
+
+        tmp = "American Express";
+        memset(cardtype, 0x00, sizeof (cardtype));
+        memcpy(cardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_JCB_WAVE_2 || data->bSID == d_VW_SID_JCB_WAVE_QVSDC) {
+
+        tmp = "J/Speedy";
+        memset(cardtype, 0x00, sizeof (cardtype));
+        memcpy(cardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+
+        tmp = " Visa payWave";
+        memset(cardtype, 0x00, sizeof (cardtype));
+        memcpy(cardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_DISCOVER) {
+        tmp = " Discover Zip";
+        memset(cardtype, 0x00, sizeof (cardtype));
+        memcpy(cardtype, tmp, strlen(tmp));
+    } else {
+        tmp = " Un-Know";
+        memset(cardtype, 0x00, sizeof (cardtype));
+        memcpy(cardtype, tmp, strlen(tmp));
+    }
+    CTOS_LCDTPrintXY(2, 5, cardtype);
+    CTOS_KBDGet(&key);
+
+
+    //Card TypeVendor
+    if (data->bSID == d_VW_SID_PAYPASS_MAG_STRIPE || data->bSID == d_VW_SID_PAYPASS_MCHIP) {
+        tmp = " Discover Zip";
+        memset(cardvendor, 0x00, sizeof (cardvendor));
+        memcpy(cardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_AE_EMV || data->bSID == d_VW_SID_AE_MAG_STRIPE) {
+        tmp = "AEMX";
+        memset(cardvendor, 0x00, sizeof (cardvendor));
+        memcpy(cardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_JCB_WAVE_2 || data->bSID == d_VW_SID_JCB_WAVE_QVSDC) {
+        tmp = "JCB";
+        memset(cardvendor, 0x00, sizeof (cardvendor));
+        memcpy(cardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        tmp = "VISA";
+        memset(cardvendor, 0x00, sizeof (cardvendor));
+        memcpy(cardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_DISCOVER) {
+        tmp = "DISCOVER";
+        memset(cardvendor, 0x00, sizeof (cardvendor));
+        memcpy(cardvendor, tmp, strlen(tmp));
+    } else {
+        tmp = " UN-KMOW";
+        memset(cardvendor, 0x00, sizeof (cardvendor));
+        memcpy(cardvendor, tmp, strlen(tmp));
+    }
+    CTOS_LCDTPrintXY(2, 6, cardvendor);
+    CTOS_KBDGet(&key);
+
+    //Card Number
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+
+        memset(cardnumber, 0x00, sizeof (cardnumber));
+        memcpy(cardnumber, &data->baTrack2Data[1], 16);
+
+
+    } else {
+        UnpackData(data->baTrack2Data, 20, baTmp);
+        memcpy(baTemp, cardnumber, 16);
+        //memcpy(baTemp2, &baTmp[12], 4);
+        baTemp2[16] = 0;
+
+    }
+
+    CTOS_LCDTPrintXY(2, 6, cardnumber);
+    CTOS_KBDGet(&key);
+
+    //Exp Date
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        memcpy(baTemp, &data->baTrack2Data[20], 4);
+        baTemp[2] = 0;
+        memcpy(baTmp1, &data->baTrack2Data[18], 4);
+        baTmp1[2] = 0;
+
+
+    } else {
+        memcpy(baTemp, baTmp + 19, 4);
+        baTemp[2] = 0;
+        memcpy(baTmp1, baTmp + 17, 4);
+        baTmp1[2] = 0;
+
+    }
+    char *separator = "/";
+    char *result = malloc(strlen(baTemp) + strlen(separator) + 1); //+1 for the zero-terminator
+    tmp = malloc(strlen(result) + strlen(baTmp1) + 1);
+    memset(expdate, 0x00, sizeof (expdate));
+    memcpy(expdate, tmp, strlen(tmp));
+    //in real code you would check for errors in malloc here
+
+    strcpy(result, baTemp);
+    strcat(result, separator);
+    strcpy(expdate, result);
+    strcat(expdate, baTmp1);
+    CTOS_LCDTPrintXY(2, 9, baTemp);
+    CTOS_KBDGet(&key);
+    CTOS_LCDTPrintXY(2, 11, baTmp1);
+    CTOS_KBDGet(&key);
+    CTOS_LCDTPrintXY(2, 12, result);
+    CTOS_KBDGet(&key);
+    CTOS_LCDTPrintXY(2, 13, expdate);
+    CTOS_KBDGet(&key);
+
+
 
 }
 //------------------------------------------------------------------------------
@@ -936,8 +1053,7 @@ void StartTrans(BYTE bType) {
     if (key == d_KBD_ENTER) {
         ClearScreen(4, 14);
         CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD);
-    }
-        //Amount not OK, go back to re-enter
+    }//Amount not OK, go back to re-enter
     else {
         return;
     }
@@ -1195,14 +1311,14 @@ void StartTrans(BYTE bType) {
         CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
 
         if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
-        ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
-        CTOS_Delay(1000);
-        return;
+            ClearScreen(4, 14);
+            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            CTOS_Delay(1000);
+            return;
         }
 
         //set TVR byte 3 if need
-        ex:
+ex:
         TLVDataGet(0x95, temp);
         temp[2] |= 0x04;
         TLVDataAdd(0x95, 5, temp);
@@ -1226,19 +1342,16 @@ void StartTrans(BYTE bType) {
         CTOS_Delay(1000);
         return;
     }
-
-    //    curlpostmain(pin, g_baInputAmt);
-    //    CTOS_KBDGet(&key);
-    //    return;
-    //    
-
+    
+    //Get Card Details
+    getcarddata(&stRCDataEx);
+    withdraw_post(pin, amount, cardvendor, cardnumber, expdate);
     usTxResult = stRCDataAnalyze.usTransResult;
     ClearScreen(4, 14);
-    CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
     //Online
     if (usTxResult == d_EMVCL_OUTCOME_ONL) {
 
-        curlpostmain(pin, g_baInputAmt);
+        withdraw_post(pin, amount, cardvendor, cardnumber, expdate);
 
         //        
         //        ClearScreen(4, 14);

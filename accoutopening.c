@@ -405,6 +405,6 @@ void print_agentrcpt(void){
 
     PrintBlank();
     ClearScreen(4, 14);
-    CTOS_LCDTPrintXY(3, 6, "Take Agents Receipt");
+    CTOS_LCDTPrintXY(3, 6, "Take Agent Receipt");
     CTOS_KBDGet(&key);
 }

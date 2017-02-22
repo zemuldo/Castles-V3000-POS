@@ -26,7 +26,7 @@ extern "C" {
 #define d_MSG_INSERT_OR_SWIPE					"INSERT or SWIPE or"
 #define d_MSG_USE_OTHER_CARD					"USE OTHER CARD    "
 
-    char *amount;
+   
     //char *cardnumber;
     char *cardpin;
 
