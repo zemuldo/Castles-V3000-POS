@@ -12,29 +12,32 @@
 BYTE key;
 
 void sysshow_screen(int tag) {
-    CTOS_LCDTClearDisplay();
+    ClearScreen(4, 26);
     CTOS_LCDTSelectFontSize(0x101E);
+    CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
+    //setfont displayed on the screen.
+    CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
 
     switch (tag) {
         case 0:
-            CTOS_LCDTPrint("   SYSTEM MODE   ");
-            CTOS_LCDTPrintXY(1, 2, "1.System Reset");
-            CTOS_LCDTPrintXY(1, 3, "2.Download Mode");
-            CTOS_LCDTPrintXY(1, 4, "3.System Wait");
-            CTOS_LCDTPrintXY(1, 5, "4.PowerOFF");
-            CTOS_LCDTPrintXY(1, 6, "5.LCDSetContrast");
-            CTOS_LCDTPrintXY(1, 7, "6.Exit Application");
+            ShowTitle("   SYSTEM MODE          ");
+            CTOS_LCDTPrintXY(1, 4, "1.System Reset");
+            CTOS_LCDTPrintXY(1, 5, "2.Download Mode");
+            CTOS_LCDTPrintXY(1, 6, "3.System Wait");
+            CTOS_LCDTPrintXY(1, 7, "4.PowerOFF");
+            CTOS_LCDTPrintXY(1, 8, "5.LCDSetContrast");
+            CTOS_LCDTPrintXY(1, 9, "6.Exit Application");
             break;
         case 1:
             CTOS_LCDTPrint("\fr   SYSTEM WAIT   \fn");
-            CTOS_LCDTPrintXY(1, 3, "Plz Press Key");
+            CTOS_LCDTPrintXY(1, 4, "Plz Press Key");
             break;
         case 2:
             CTOS_LCDTPrint("\fr LCD CONTRAST \fn");
-            CTOS_LCDTPrintXY(1, 3, "AAAAAAAAAAAAA");
-            CTOS_LCDTPrintXY(1, 4, "bbbbbbbbbbb");
-            CTOS_LCDTPrintXY(1, 5, "EEEEEEEEEEEE");
-            CTOS_LCDTPrintXY(1, 8, "Down->'+'Up->'-'");
+            CTOS_LCDTPrintXY(1, 4, "AAAAAAAAAAAAA");
+            CTOS_LCDTPrintXY(1, 5, "bbbbbbbbbbb");
+            CTOS_LCDTPrintXY(1, 6, "EEEEEEEEEEEE");
+            CTOS_LCDTPrintXY(1, 7, "Down->'+'Up->'-'");
             break;
     }
 }
@@ -51,7 +54,7 @@ void SystemWait(void) {
     BYTE baTemp[d_BUFF_SIZE];
 
     while (1) {
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
         sprintf(baTemp, "clear:%d", i1++);
         CTOS_LCDTPrintXY(1, 5, baTemp);
         //show_screen(1);

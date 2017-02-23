@@ -32,10 +32,10 @@
       <itemPath>Setting.c</itemPath>
       <itemPath>Transaction.c</itemPath>
       <itemPath>accoutopening.c</itemPath>
+      <itemPath>agentballance.c</itemPath>
       <itemPath>appmain.c</itemPath>
-      <itemPath>ballance.c</itemPath>
+      <itemPath>balance.c</itemPath>
       <itemPath>cJSON.c</itemPath>
-      <itemPath>cardless_curlpost.c</itemPath>
       <itemPath>cardlessdeposit.c</itemPath>
       <itemPath>curlpost.c</itemPath>
       <itemPath>debug2.c</itemPath>
@@ -43,12 +43,15 @@
       <itemPath>gsm.c</itemPath>
       <itemPath>jsonbulder.c</itemPath>
       <itemPath>mainmenu.c</itemPath>
+      <itemPath>ministatement.c</itemPath>
       <itemPath>moremenu.c</itemPath>
       <itemPath>paywith.c</itemPath>
       <itemPath>powerautomode.c</itemPath>
+      <itemPath>setpin.c</itemPath>
       <itemPath>settings.c</itemPath>
       <itemPath>systemops.c</itemPath>
       <itemPath>ussd.c</itemPath>
+      <itemPath>utilitypay.c</itemPath>
       <itemPath>withdraw.c</itemPath>
       <itemPath>wub_lib.c</itemPath>
     </logicalFolder>

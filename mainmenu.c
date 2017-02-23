@@ -20,7 +20,7 @@ void mainmenu(void) {
     
         while (1) {
 
-            ClearScreen(4, 14);
+            ClearScreen(4, 26);
             ShowTitle("   MAIN MENU           ");
             CTOS_LCDTPrintXY(1, 15, "              X-Exit");
             
@@ -48,7 +48,7 @@ void mainmenu(void) {
                     break;
 
                 case '3':
-                    balance();
+                    getballance();
                     break;
                 case '4':
                     break;

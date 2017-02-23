@@ -22,8 +22,5 @@
 void withdraw(void)
 {
   
-  Do_Transaction();
-  return;
-    
 }
 

@@ -47,11 +47,37 @@
 
 
 
+BYTE bType;
+
 ULONG ulRtn;
 USHORT usTxResult;
 char baInput[20];
 int iLen;
-BYTE pin[20];
+
+UCHAR pbBuf[1024];
+STR sBuf[1024];
+BYTE baTmp[5000];
+BYTE baBuf[128];
+BYTE baTemp[256];
+BYTE baTemp2[256];
+BYTE baTemp3[256];
+BYTE baTemp4[256];
+BYTE baTmp1[256];
+
+BYTE cvv[3];
+BYTE expdate[6];
+BYTE cardtype[255];
+BYTE cardnumber[17];
+BYTE cardvendor[255];
+BYTE pin[4];
+
+BYTE mcvv[3];
+BYTE mexpdate[6];
+BYTE mcardtype[255];
+BYTE mcardnumber[17];
+BYTE mcardvendor[255];
+BYTE mpin[5];
+
 UCHAR pbBuf[1024];
 STR sBuf[1024];
 BYTE baTmp[5000];
@@ -60,6 +86,7 @@ BYTE baTemp[256];
 BYTE baTemp2[256];
 BYTE baTmp1[256];
 BYTE bacBuff[128];
+
 EMVCL_ACT_DATA stACTData;
 EMVCL_RC_DATA_EX stRCDataEx;
 EMVCL_RC_DATA_ANALYZE stRCDataAnalyze;
@@ -84,26 +111,127 @@ BYTE g_IsHostBusy;
 BYTE g_IsHostBusy;
 int iBatchNo;
 BYTE g_bTxntype;
+BYTE paybillnum[9];
+BYTE countycode[9];
+
 #define d_INIT_TRANS	0x01
 /** 
 ** The main entry of the terminal application 
 **/
 
-void payprintreceipt(void)
+void payprintreceipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature,ULONG ulValue) {
+    //------------------------------------------------------
+    //PrintBlank();
+    CTOS_FONT_ATTRIB stFONT_ATTRIB;
 
-{
-    EMVCL_RC_DATA_EX *data; ULONG ulValue;
-    CTOS_PrinterPutString("================================");
-    PrintBlank();
-    //Store ID
-    sprintf(baBuf, "Store ID    :      8220101400255");
+    if (data->bSID == d_VW_SID_PAYPASS_MAG_STRIPE || data->bSID == d_VW_SID_PAYPASS_MCHIP) {
+        sprintf(baBuf, "           Master PayPass");
+    } else if (data->bSID == d_VW_SID_AE_EMV || data->bSID == d_VW_SID_AE_MAG_STRIPE) {
+        sprintf(baBuf, "           American Express");
+    } else if (data->bSID == d_VW_SID_JCB_WAVE_2 || data->bSID == d_VW_SID_JCB_WAVE_QVSDC) {
+        sprintf(baBuf, "           J/Speedy");
+    } else if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        sprintf(baBuf, "           Visa payWave");
+    } else if (data->bSID == d_VW_DISCOVER) {
+        sprintf(baBuf, "           Discover Zip");
+    } else {
+        sprintf(baBuf, "           Un-Know");
+    }
     CTOS_PrinterPutString(baBuf);
 
     //Terminal ID
-    sprintf(baBuf, "Terminal ID :           01401493");
+    sprintf(baBuf, "Terminal ID :  01401493");
+    CTOS_PrinterPutString(baBuf);
+    //Store ID
+    sprintf(baBuf, "TransactionI:  8220101400255");
     CTOS_PrinterPutString(baBuf);
     CTOS_PrinterPutString("================================");
     
+    //Type
+    sprintf(baBuf, "Type :  Revenue Collection");
+    CTOS_PrinterPutString(baBuf);
+    
+    
+    
+    sprintf(baBuf, "Revenue code : %s ", paybillnum);
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+    
+    sprintf(baBuf, "County code : %s", countycode);
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+    
+
+    //Card Type
+    if (data->bSID == d_VW_SID_PAYPASS_MAG_STRIPE || data->bSID == d_VW_SID_PAYPASS_MCHIP) {
+        sprintf(baBuf, "Card Type  : MASTER");
+    } else if (data->bSID == d_VW_SID_AE_EMV || data->bSID == d_VW_SID_AE_MAG_STRIPE) {
+        sprintf(baBuf, "Card Type  : AEMX");
+    } else if (data->bSID == d_VW_SID_JCB_WAVE_2 || data->bSID == d_VW_SID_JCB_WAVE_QVSDC) {
+        sprintf(baBuf, "Card Type  : JCB");
+    } else if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        sprintf(baBuf, "Card Type  : VISA");
+    } else if (data->bSID == d_VW_DISCOVER) {
+        sprintf(baBuf, "Card Type  : DISCOVER");
+    } else {
+        sprintf(baBuf, "Card Type  : UN-KMOW");
+    }
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+    //Card Number
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        memset(baTemp, 0x00, sizeof (baTemp));
+        memset(baTemp2, 0x00, sizeof (baTemp2));
+        memset(baTemp3, 0x00, sizeof (baTemp3));
+        memset(baTemp4, 0x00, sizeof (baTemp4));
+        memcpy(baTemp, &data->baTrack2Data[1], 4);
+        memcpy(baTemp2, &data->baTrack2Data[13], 4);
+        memcpy(baTemp3, &data->baTrack2Data[5], 4);
+        memcpy(baTemp4, &data->baTrack2Data[9], 4);
+
+
+    } else {
+        UnpackData(data->baTrack2Data, 20, baTmp);
+        memcpy(baTemp, baTmp, 4);
+        memcpy(baTemp2, &baTmp[12], 4);
+        baTemp2[16] = 0;
+
+    }
+
+
+    stFONT_ATTRIB.FontSize = d_FONT_8x16;
+    stFONT_ATTRIB.X_Zoom = 2;
+    stFONT_ATTRIB.Y_Zoom = 2;
+    sprintf(baBuf, "Card Number: %s XXXX XXXX %s", baTemp, baTemp2);
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+
+    //Exp Date
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        memcpy(baTemp, &data->baTrack2Data[20], 2);
+        baTemp[2] = 0;
+        memcpy(baTmp1, &data->baTrack2Data[18], 2);
+        baTmp1[2] = 0;
+
+
+    } else {
+        memcpy(baTemp, baTmp + 19, 2);
+        baTemp[2] = 0;
+        memcpy(baTmp1, baTmp + 17, 2);
+        baTmp1[2] = 0;
+
+    }
+    sprintf(baBuf, "Exp Date   : %s/%s", baTemp, baTmp1);
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+    //Trans Type
+    CTOS_PrinterPutString("Trans Type : Revenue Collection");
+    CTOS_PrinterPutString(" ");
+
     //Date
     memcpy(baTemp, data->baDateTime, 4);
     baTemp[4] = 0;
@@ -115,8 +243,7 @@ void payprintreceipt(void)
     DebugAddHEX("date:", baBuf, strlen(baBuf));
     CTOS_PrinterPutString(baBuf);
     CTOS_PrinterPutString(" ");
-    
-    
+
     //Time
     memcpy(baTemp, data->baDateTime + 8, 2);
     baTemp[2] = 0;
@@ -128,22 +255,38 @@ void payprintreceipt(void)
     DebugAddHEX("time:", baBuf, strlen(baBuf));
     CTOS_PrinterPutString(baBuf);
     CTOS_PrinterPutString(" ");
-    
-    sprintf(bacBuff, "strlen(): %d", strlen(bacBuff));
-    CTOS_PrinterPutString(bacBuff);
-    CTOS_PrinterPutString(" ");
-    
-    // AMOUNT
-    sprintf(baBuf, "     AMOUNT: KSH %ld.%02ld", ulValue / 100, ulValue % 100);
+
+    //Auth Code
+    memcpy(baTemp, data->baTrack2Data + 19, 2);
+    baTemp[2] = 0;
+    sprintf(baBuf, "Auth Code  : TT2738");
     CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+    //Batch No
+    iBatchNo++;
+    sprintf(baBuf, "Batch No   : %06d", iBatchNo);
+    CTOS_PrinterPutString(baBuf);
+
+    CTOS_PrinterPutString(" ");
+
+    // AMOUNT
+    sprintf(baBuf, "     Ballance: KSH: %ld", ulValue);
+    CTOS_PrinterPutString(baBuf);
+    if (isNeedSignature) {
+        sprintf(baBuf, "Signature  ");
+        CTOS_PrinterPutString(baBuf);
+        PrintBlank();
+    }
 
     CTOS_PrinterPutString("================================");
 
-    
+    PrintBlank();
+
 }
 
-void paydo_transact(void) {
-    BYTE bType;
+
+void paydo_transact(BYTE bType) {
     BYTE bKey;
     BYTE NeedSignature;
     BYTE temp[20];
@@ -180,11 +323,11 @@ void paydo_transact(void) {
     g_ulAmt += g_ulCBAmt;
 
     //Confirm Transaction
-
-    ClearScreen(4, 14);
+    ShowTitle("  Revenue Collection          ");
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(2, 4, "Please Confirm");
     CTOS_LCDTPrintXY(2, 6, "   Deposit");
-    sprintf(temp, "   KSH %ld.%02ld", g_ulAmt / 100, g_ulAmt % 100);
+    sprintf(temp, "   KSH %ld", g_ulAmt);
     memset(baAmount, 0x00, sizeof (baAmount));
     memcpy(baAmount, temp, strlen(temp));
     CTOS_LCDTPrintXY(2, 8, baAmount);
@@ -194,7 +337,7 @@ void paydo_transact(void) {
     
     CTOS_KBDGet(&key);
     if (key == d_KBD_ENTER) {
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
     }
     else{return;}
     
@@ -206,24 +349,24 @@ void paydo_transact(void) {
     STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
         ""};
     BYTE baBuff[256];
-   ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(2, 5, "Enter Bill NO:");
-       CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, baBuff,
+   ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(2, 5, "Enter Revenue Code:");
+       CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, paybillnum,
                     8);
-
-            sprintf(baBuff, "strlen(): %d", strlen(baBuff));
-        
-    
+    ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(2, 5, "Enter County Code:");
+       CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, countycode,
+                    8);
     //Amount okay Continue to Read Card
             CTOS_KBDGet(&key);
     if (key == d_KBD_ENTER) {
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
         CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD);
     }//Amount not OK, go back to re-enter
     else {
         return;
     }
-            
+
 
     memset(&stACTData, 0, sizeof (EMVCL_ACT_DATA));
     memset(&stRCDataEx, 0, sizeof (EMVCL_RC_DATA_EX));
@@ -292,7 +435,7 @@ void paydo_transact(void) {
 
                     if ((bStatus & d_MK_SC_PRESENT)) {
                         // Check the ICC Card is inserted 
-                        ClearScreen(4, 14);
+                        ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
@@ -307,7 +450,7 @@ void paydo_transact(void) {
                     rtn = CTOS_MSRRead(baTk1Buf, &usTk1Len, baTk2Buf, &usTk2Len, baTk3Buf, &usTk3Len);
                     if (rtn == d_OK && (!(usTk1Len == 0 && usTk2Len == 0 && usTk3Len == 0))) {
                         // MSR is read
-                        ClearScreen(4, 14);
+                        ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
@@ -343,7 +486,7 @@ void paydo_transact(void) {
                 isContactInterfaceSupport = TRUE;
                 isMastripeInterfaceSupport = TRUE;
 
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_TRY_OTHER_INTERFACE);
                 CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE_CARD);
                 CTOS_LCDTPrintXY(1, 6, baAmount);
@@ -367,15 +510,15 @@ void paydo_transact(void) {
                 isContactInterfaceSupport = TRUE;
                 isMastripeInterfaceSupport = TRUE;
 
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_UNSUPPORT_CARD);
                 CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE);
                 CTOS_LCDTPrintXY(1, 6, d_MSG_USE_OTHER_CARD);
                 CTOS_Delay(3000);
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_PRESENT_CARD);
                 CTOS_LCDTPrintXY(1, 5, baAmount);
-               // EMVCL_ShowContactlessSymbol(NULL);
+                // EMVCL_ShowContactlessSymbol(NULL);
             }
         } while (1);
     } else {
@@ -392,7 +535,7 @@ void paydo_transact(void) {
     DebugAddHEX("SCData Chip", stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
     DebugAddHEX("SCData Additional", stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
 
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, d_MSG_READ_CARD_OK);
     CTOS_LCDTPrintXY(1, 6, d_MSG_REMOVE_CARD);
     CTOS_Delay(1300);
@@ -463,12 +606,12 @@ void paydo_transact(void) {
 
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_ONLPIN) {
         CVMStr = "     CVM->PIN      ";
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
         CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
 
         if (Get_PIN_Input(1, 5, 4, 16, '*', pin, &pin_len) == FALSE) {
-            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
-            CTOS_Delay(1000);
+            //CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            //CTOS_Delay(1000);
             return;
         }
 
@@ -479,60 +622,19 @@ void paydo_transact(void) {
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
         CVMStr = "   CVM->No CVM Req  ";
     }
-    
-    
 
+
+
+    //get card details
+    getcarddata(&stRCDataEx);
+
+    //send request
+    paybill_post(pin, g_baInputAmt,cardvendor, cardnumber, expdate, paybillnum,countycode);
     usTxResult = stRCDataAnalyze.usTransResult;
 
-    //Online
-    if (usTxResult == d_EMVCL_OUTCOME_ONL) {
-        CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
-        int validation = curlpostmain();
-        if (validation == 1) {
-            CTOS_LCDTPrintXY(1, 6, "Success ");
-            Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
-            CTOS_KBDGet(&key);
-            return;
-        } else {
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, "Failed ");
-             CTOS_KBDGet(&key);
-            return;
-        }
-        ClearScreen(4, 14);
-        //CTOS_LCDTPrintXY(1, 5, d_MSG_ONLINE);
-        //CTOS_LCDTPrintXY(1, 6, "                    ");
 
-        //Rrepare Upload Data to host
-        upload_tx_len = 0;
 
-        upload_tx_buf[upload_tx_len++] = 14;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baDateTime, 14);
-        upload_tx_len += 14;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack1Len;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack1Data, stRCDataEx.bTrack1Len);
-        upload_tx_len += stRCDataEx.bTrack1Len;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.bTrack2Len;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baTrack2Data, stRCDataEx.bTrack2Len);
-        upload_tx_len += stRCDataEx.bTrack2Len;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen / 256;
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usChipDataLen % 256;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
-        upload_tx_len += stRCDataEx.usChipDataLen;
-
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen / 256;
-        upload_tx_buf[upload_tx_len++] = stRCDataEx.usAdditionalDataLen % 256;
-        memcpy(&upload_tx_buf[upload_tx_len], stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
-        upload_tx_len += stRCDataEx.usAdditionalDataLen;
-
-        //send upload data and get the online authen result
-        usTxResult = Online_Process(upload_tx_buf, upload_tx_len);
-    }
-
-    Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
+    payprintreceipt(&stRCDataEx, NeedSignature, g_ulAmt);
     if (NeedSignature) {
         bStatus = SignatureProcessing();
         if (bStatus != 0) {
@@ -540,106 +642,45 @@ void paydo_transact(void) {
         }
     }
 
-    //ClearScreen(4, 14);
-    CTOS_LCDTPrintXY(1, 5, msg);
-
-
-    if (usTxResult == d_EMVCL_OUTCOME_APPROVAL) {
-        if (g_bTxntype == 0x20) {
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, d_MSG_REFUND);
-        } else {
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, d_MSG_APPROVED);
-        }
-        CTOS_LCDTPrintXY(1, 7, baAmount);
-
-        CTOS_LCDTPrintXY(1, 8, CVMStr);
-        if (stRCDataAnalyze.bVisaAOSAPresent == TRUE) {
-            ulValue = wub_bcd_2_long(stRCDataAnalyze.baVisaAOSA, 6);
-            DebugAddINT("baVisaAOSA", ulValue);
-            sprintf(temp, "   KSH %ld.%02ld    ", ulValue / 100, ulValue % 100);
-            CTOS_LCDTPrintXY(1, 9, temp);
-        }
-        CTOS_Delay(3000);
-    } else if (usTxResult == d_EMVCL_OUTCOME_DECLINED) {
-        if (g_IsHostBusy) {
-            g_IsHostBusy = FALSE;
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, d_MSG_HOST_BUSY);
-            CTOS_LCDTPrintXY(1, 7, d_MSG_DECLINE);
-        } else {
-            ClearScreen(4, 14);
-            CTOS_LCDTPrintXY(1, 6, d_MSG_DECLINE);
-        }
-
-        CTOS_LCDTPrintXY(1, 8, CVMStr);
-        if (stRCDataAnalyze.bVisaAOSAPresent == TRUE) {
-            ulValue = wub_bcd_2_long(stRCDataAnalyze.baVisaAOSA, 6);
-            DebugAddINT("baVisaAOSA", ulValue);
-            sprintf(temp, "   KSH %ld.%02ld    ", ulValue / 100, ulValue % 100);
-            CTOS_LCDTPrintXY(1, 9, temp);
-        }
-        CTOS_Delay(3000);
-    } else {
-        CTOS_LCDTPrintXY(1, 6, "Unknow Result");
-        CTOS_KBDGet(&bKey);
-        return;
-    }
 
     return;
 }
+
 void paytransact(void) {
     ULONG ulRtn;
-    BYTE *pstr;
     BYTE key;
 
     //Perform Transaction via Transaction APIs	
     iBatchNo = 0;
-    while (1) {
-        ClearScreen(4, 14);
-        EMVCL_StartIdleLEDBehavior(NULL);
-        ShowTitle("  Deposit       ");
-        CTOS_LCDTPrintXY(1, 4, "Welcome        ");
+    ClearScreen(4, 26);
+    EMVCL_StartIdleLEDBehavior(NULL);
+    ShowTitle("  Revenue Collection         ");
 
-        switch (g_bTxntype) {
-            case 0x00:
-                pstr = "    Paybill     ";
-                break;
-            case 0x01:
-                pstr = "    Payfee   ";
-                break;
-           
-        }
-        ClearScreen(4, 14);
-        ShowTitle(pstr);
-        ulRtn = InputValue();
+    ClearScreen(4, 26);
+    ulRtn = InputValue();
 
-        if (ulRtn == d_NO) {
-            break;
-        }
-
-        //If the mutual authen was ok, start a transaction.
-
-
-        paydo_transact();
-
-        CTOS_Delay(1000);
+    if (ulRtn == d_NO) {
+        return;
     }
+
+    //If the mutual authen was ok, start a transaction.
+
+
+    paydo_transact(d_INIT_TRANS);
+
 
     EMVCL_StopIdleLEDBehavior(NULL);
     EMVCL_SetLED(0x0F, 0x08);
 }
-void payfee(void)
-{
+
+void payfee(void) {
     paytransact();
     return;
 }
 
-void paybill(void)
-{
+void paybill(void) {
     paytransact();
-  return;
+    return;
 }
 
 

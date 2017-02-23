@@ -58,7 +58,7 @@ void transactionmain(void) {
     BYTE bKey;
     ULONG ulRtn;
 
-    CTOS_LCDTClearDisplay();
+    ClearScreen(4, 26);
     CTOS_LCDSelectMode(0x04);
     CTOS_LCDTSelectFontSize(d_FONT_16x30);
 
@@ -76,46 +76,65 @@ void transactionmain(void) {
         CTOS_KBDGet(&bKey);
         return;
     }
-
+    //CTOS_LanguageLCDFontSize(d_FONT_16x16, 0);
+    CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
+    //setfont displayed on the screen.
+    CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
     EMVCL_ShowVirtualLED(NULL);
     EMVCL_SetLED(0x0F, 0x08);
 
     while (1) {
 
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
         ShowTitle("   AGENT MENU           ");
-        CTOS_LCDTPrintXY(2, 5, "1. WITHDRAW");
-        CTOS_LCDTPrintXY(2, 6, "2. CARD DEPOSIT");
-        CTOS_LCDTPrintXY(2, 7, "3. DEPOSIT NO CARD");
-        CTOS_LCDTPrintXY(2, 8, "4. PAY BILL");
-        CTOS_LCDTPrintXY(2, 9, "5. PAY FEE");
-        CTOS_LCDTPrintXY(2, 10, "6. Creat Accnt");
-        CTOS_LCDTPrintXY(1, 11, "              X-Exit");
+        CTOS_LCDTPrintXY(2, 5, "1.A/C Opening");
+        CTOS_LCDTPrintXY(2, 6, "2.Cash Withdrawal");
+        CTOS_LCDTPrintXY(2, 7, "3.Card Deposit");
+        CTOS_LCDTPrintXY(2, 8, "4.Cardless Deposit");
+        CTOS_LCDTPrintXY(2, 9, "5.Ballance Inquiry");
+        CTOS_LCDTPrintXY(2, 10, "6.Agent Ballance");
+        CTOS_LCDTPrintXY(2, 11, "7.Mini Statement");
+        CTOS_LCDTPrintXY(2, 12, "8.Set PIN");
+        CTOS_LCDTPrintXY(2, 13, "9.Revenue Collection");
+        CTOS_LCDTPrintXY(2, 14, "0.Next Page");
+        CTOS_LCDTPrintXY(1, 16, "              X-Back");
 
         CTOS_KBDGet(&key);
 
         switch (key) {
             case '1':
-                withdraw();
+                create_account();
                 break;
-
             case '2':
-                deposit();
+                Do_Transaction();
                 break;
 
             case '3':
-                cardlessdeposit();
-                break;
-            case '4':
-                paybill();
+                deposit();
                 break;
 
-            case '5':
-                payfee();
+            case '4':
+                do_transact();
+                break;
+            case '5':;
+                getballance();
                 break;
 
             case '6':
-                create_account();
+                agentgetballance();
+                break;
+
+            case '7':
+                getstatement();
+                break;
+            case '8':
+                changepin();
+                break;
+            case '9':
+                paytransact();
+                break;
+            case '0':
+                moremenu();
                 break;
             case d_KBD_CANCEL:
                 loginwithpin();
@@ -143,7 +162,7 @@ STR * keyboardLayoutEnglish[] = {" 0", "qzQZ1", "abcABC2", "defDEF3", "ghiGHI4",
     "jklJKL5", "mnoMNO6", "prsPRS7", "tuvTUV8", "wxyWXY9", ":;/\\|?,.<>", ".!@#$%^&*()"};
 STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
     ""};
-BYTE baBuff[256];
+
 
 int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
     int i;
@@ -158,13 +177,16 @@ int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
 }
 
 void loginwithpin(void) {
-    CTOS_LCDTClearDisplay();
+    CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
+    //setfont displayed on the screen.
+    CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
+    ClearScreen(4, 26);
     //Check if session is active
     if (loggin[1] != '1') {
         CTOS_LCDTPrintXY(4, 5, "Enter Password");
         CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
         if (strcmp(temppassword, password) != 0) {
-            CTOS_LCDTClearDisplay();
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(3, 5, "Wrong Password");
             CTOS_LCDTPrintXY(3, 6, "   !!!!!");
             CTOS_Delay(1000);
@@ -174,17 +196,16 @@ void loginwithpin(void) {
             loggin[1] = '1';
             exit;
         }
-    }
-    else {
+    } else {
         exit;
     }
     //National ID
 
     CTOS_PowerAutoModeEnable();
-    ClearScreen(4, 14);
-    ShowTitle("AGENCY BANKING DEMO    ");
+    CTOS_LCDTClearDisplay();
+    ShowTitle("AGENCY BANKING DEMO                ");
     CTOS_LCDTPrintXY(3, 5, "1. Transaction");
-    CTOS_LCDTPrintXY(3, 6, "2. Power Save Mode");
+    CTOS_LCDTPrintXY(3, 6, "2. Sleep");
     CTOS_LCDTPrintXY(3, 7, "3. Shutdown");
     CTOS_LCDTPrintXY(3, 8, "4. Restart");
     CTOS_LCDTPrintXY(3, 9, "5. Settings");

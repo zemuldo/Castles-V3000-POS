@@ -13,25 +13,34 @@ void moremenu(void) {
 
     BYTE key;
     while (1) {
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
         ShowTitle("   MAIN MENU  ");
-        CTOS_LCDTPrintXY(1, 15, "       X. BACK");
-        CTOS_LCDTPrintXY(3, 4, "1. E-Bank");
-        CTOS_LCDTPrintXY(3, 5, "2. M-Bank");
-      
+        CTOS_LCDTPrintXY(2, 5, "1.Card Utility Pay");
+        CTOS_LCDTPrintXY(2, 6, "2.User Login");
+        CTOS_LCDTPrintXY(2, 7, "3.Reports");
+        CTOS_LCDTPrintXY(2, 8, "4.Batch Uploads");
+        CTOS_LCDTPrintXY(2, 16, " X. BACK");
+
 
 
         CTOS_KBDGet(&key);
 
         switch (key) {
             case '1':
-                return;
+                dorutilitypay();
                 break;
 
             case '2':
                 return;
                 break;
-            
+            case '3':
+                return;
+                break;
+
+            case '4':
+                return;
+                break;
+
             case d_KBD_CANCEL:
                 return;
                 break;

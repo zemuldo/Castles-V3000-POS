@@ -57,6 +57,14 @@ BYTE expdate[6];
 BYTE cardtype[255];
 BYTE cardnumber[17];
 BYTE cardvendor[255];
+BYTE mpin[5];
+
+BYTE mcvv[3];
+BYTE mexpdate[6];
+BYTE mcardtype[255];
+BYTE mcardnumber[17];
+BYTE mcardvendor[255];
+BYTE mpin[5];
 
 //
 EMVCL_ACT_DATA stACTData;
@@ -163,7 +171,7 @@ void ShowInput_AmountEx(BYTE bX, BYTE bY, BYTE *pAmtStr, BYTE bAmtStrLen) {
     int ilen;
 
     ilen = bAmtStrLen;
-
+    CTOS_LCDTPrintXY(bX, bY, "KSH:");
     ulTxAmount = ASCII_2Int(pAmtStr, ilen);
     sprintf(temp, "KSH: %ld", ulTxAmount);
     memcpy(sInputAmount, &temp[1], strlen(temp) - 1);
@@ -276,7 +284,7 @@ void ClearScreen(BYTE bStartY, BYTE bEndY) {
     BYTE i;
 
     for (i = bStartY; i <= bEndY; i++) {
-        CTOS_LCDTPrintXY(1, i, "                    ");
+        CTOS_LCDTPrintXY(1, i, "                            ");
     }
 }
 //------------------------------------------------------------------------------
@@ -419,20 +427,20 @@ ULONG InputValue(void) {
     g_usCBAmtLen = 0;
     g_usAmtLen = 0;
 
-    CTOS_LCDTPrintXY(3, 3, "Input Amount\n");
-    CTOS_LCDTPrintXY(3, 4, " ");
+    CTOS_LCDTPrintXY(3, 4, "Input Amount\n");
+    CTOS_LCDTPrintXY(3, 5, "KSH:");
 
-    ulRtn = Input_Amount(3, 4, g_baInputAmt, sizeof (g_baInputAmt), &g_usAmtLen);
+    ulRtn = Input_Amount(3, 5, g_baInputAmt, sizeof (g_baInputAmt), &g_usAmtLen);
     if (ulRtn != d_OK) {
         return ulRtn;
     }
 
     if (g_bTxntype == 0x09) //Cash Back
     {
-        //ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(3, 3, "Input CB Amt\n");
-        CTOS_LCDTPrintXY(3, 4, " ");
-        ulRtn = Input_Amount(3, 4, g_baInputCBAmt, sizeof (g_baInputCBAmt), &g_usCBAmtLen);
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(3, 4, "Input CB Amt\n");
+        CTOS_LCDTPrintXY(3, 5, " ");
+        ulRtn = Input_Amount(3, 5, g_baInputCBAmt, sizeof (g_baInputCBAmt), &g_usCBAmtLen);
         return ulRtn;
     }
 
@@ -544,7 +552,7 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     CTOS_PrinterPutString(" ");
 
     //Trans Type
-    CTOS_PrinterPutString("Trans Type : SALE");
+    CTOS_PrinterPutString("Trans Type : Withdrawal");
     CTOS_PrinterPutString(" ");
 
     //Date
@@ -586,7 +594,7 @@ void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue) 
     CTOS_PrinterPutString(" ");
 
     // AMOUNT
-    sprintf(baBuf, "     AMOUNT: KSH %ld.%02ld", ulValue / 100, ulValue % 100);
+    sprintf(baBuf, "     AMOUNT: KSH %ld", ulValue);
     CTOS_PrinterPutString(baBuf);
     if (isNeedSignature) {
         sprintf(baBuf, "Signature  ");
@@ -635,8 +643,8 @@ void getcarddata(EMVCL_RC_DATA_EX *data/*,BYTE *tmpcardtype,BYTE *tmpcarvendor,B
         memset(cardtype, 0x00, sizeof (cardtype));
         memcpy(cardtype, tmp, strlen(tmp));
     }
-    CTOS_LCDTPrintXY(2, 5, cardtype);
-    CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 5, cardtype);
+    //CTOS_KBDGet(&key);
 
 
     //Card TypeVendor
@@ -665,8 +673,8 @@ void getcarddata(EMVCL_RC_DATA_EX *data/*,BYTE *tmpcardtype,BYTE *tmpcarvendor,B
         memset(cardvendor, 0x00, sizeof (cardvendor));
         memcpy(cardvendor, tmp, strlen(tmp));
     }
-    CTOS_LCDTPrintXY(2, 6, cardvendor);
-    CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 6, cardvendor);
+    //CTOS_KBDGet(&key);
 
     //Card Number
     if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
@@ -683,8 +691,8 @@ void getcarddata(EMVCL_RC_DATA_EX *data/*,BYTE *tmpcardtype,BYTE *tmpcarvendor,B
 
     }
 
-    CTOS_LCDTPrintXY(2, 6, cardnumber);
-    CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 6, cardnumber);
+    //CTOS_KBDGet(&key);
 
     //Exp Date
     if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
@@ -712,14 +720,139 @@ void getcarddata(EMVCL_RC_DATA_EX *data/*,BYTE *tmpcardtype,BYTE *tmpcarvendor,B
     strcat(result, separator);
     strcpy(expdate, result);
     strcat(expdate, baTmp1);
-    CTOS_LCDTPrintXY(2, 9, baTemp);
-    CTOS_KBDGet(&key);
-    CTOS_LCDTPrintXY(2, 11, baTmp1);
-    CTOS_KBDGet(&key);
-    CTOS_LCDTPrintXY(2, 12, result);
-    CTOS_KBDGet(&key);
-    CTOS_LCDTPrintXY(2, 13, expdate);
-    CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 9, baTemp);
+    //CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 11, baTmp1);
+    //CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 12, result);
+    //CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 13, expdate);
+    //CTOS_KBDGet(&key);
+
+
+
+}
+
+void getmarchantcarddata(EMVCL_RC_DATA_EX *data/*,BYTE *tmpcardtype,BYTE *tmpcarvendor,BYTE tmpcardnumber[17], BYTE tmpcvv*/) {
+    CTOS_FONT_ATTRIB stFONT_ATTRIB;
+
+    char *tmp;
+    //Card Type
+
+    if (data->bSID == d_VW_SID_PAYPASS_MAG_STRIPE || data->bSID == d_VW_SID_PAYPASS_MCHIP) {
+
+        tmp = "Master PayPass";
+        memset(mcardtype, 0x00, sizeof (mcardtype));
+        memcpy(mcardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_AE_EMV || data->bSID == d_VW_SID_AE_MAG_STRIPE) {
+
+        tmp = "American Express";
+        memset(mcardtype, 0x00, sizeof (mcardtype));
+        memcpy(mcardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_JCB_WAVE_2 || data->bSID == d_VW_SID_JCB_WAVE_QVSDC) {
+
+        tmp = "J/Speedy";
+        memset(mcardtype, 0x00, sizeof (mcardtype));
+        memcpy(mcardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+
+        tmp = " Visa payWave";
+        memset(mcardtype, 0x00, sizeof (mcardtype));
+        memcpy(mcardtype, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_DISCOVER) {
+        tmp = " Discover Zip";
+        memset(mcardtype, 0x00, sizeof (mcardtype));
+        memcpy(mcardtype, tmp, strlen(tmp));
+    } else {
+        tmp = " Un-Know";
+        memset(mcardtype, 0x00, sizeof (mcardtype));
+        memcpy(mcardtype, tmp, strlen(tmp));
+    }
+    //CTOS_LCDTPrintXY(2, 5, cardtype);
+    //CTOS_KBDGet(&key);
+
+
+    //Card TypeVendor
+    if (data->bSID == d_VW_SID_PAYPASS_MAG_STRIPE || data->bSID == d_VW_SID_PAYPASS_MCHIP) {
+        tmp = " Discover Zip";
+        memset(mcardvendor, 0x00, sizeof (mcardvendor));
+        memcpy(mcardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_AE_EMV || data->bSID == d_VW_SID_AE_MAG_STRIPE) {
+        tmp = "AEMX";
+        memset(mcardvendor, 0x00, sizeof (mcardvendor));
+        memcpy(mcardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_JCB_WAVE_2 || data->bSID == d_VW_SID_JCB_WAVE_QVSDC) {
+        tmp = "JCB";
+        memset(mcardvendor, 0x00, sizeof (mcardvendor));
+        memcpy(mcardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        tmp = "VISA";
+        memset(mcardvendor, 0x00, sizeof (mcardvendor));
+        memcpy(mcardvendor, tmp, strlen(tmp));
+    } else if (data->bSID == d_VW_DISCOVER) {
+        tmp = "DISCOVER";
+        memset(mcardvendor, 0x00, sizeof (mcardvendor));
+        memcpy(mcardvendor, tmp, strlen(tmp));
+    } else {
+        tmp = " UN-KMOW";
+        memset(mcardvendor, 0x00, sizeof (mcardvendor));
+        memcpy(mcardvendor, tmp, strlen(tmp));
+    }
+    //CTOS_LCDTPrintXY(2, 6, cardvendor);
+    //CTOS_KBDGet(&key);
+
+    //Card Number
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+
+        memset(mcardnumber, 0x00, sizeof (mcardnumber));
+        memcpy(mcardnumber, &data->baTrack2Data[1], 16);
+
+
+    } else {
+        UnpackData(data->baTrack2Data, 20, baTmp);
+        memcpy(baTemp, mcardnumber, 16);
+        //memcpy(baTemp2, &baTmp[12], 4);
+        baTemp2[16] = 0;
+
+    }
+
+    //CTOS_LCDTPrintXY(2, 6, cardnumber);
+    //CTOS_KBDGet(&key);
+
+    //Exp Date
+    if (data->bSID == d_VW_SID_VISA_OLD_US || data->bSID == d_VW_SID_VISA_WAVE_2 || data->bSID == d_VW_SID_VISA_WAVE_QVSDC || data->bSID == d_VW_SID_VISA_WAVE_MSD) {
+        memcpy(baTemp, &data->baTrack2Data[20], 4);
+        baTemp[2] = 0;
+        memcpy(baTmp1, &data->baTrack2Data[18], 4);
+        baTmp1[2] = 0;
+
+
+    } else {
+        memcpy(baTemp, baTmp + 19, 4);
+        baTemp[2] = 0;
+        memcpy(baTmp1, baTmp + 17, 4);
+        baTmp1[2] = 0;
+
+    }
+    char *separator = "/";
+    char *result = malloc(strlen(baTemp) + strlen(separator) + 1); //+1 for the zero-terminator
+    tmp = malloc(strlen(result) + strlen(baTmp1) + 1);
+    memset(mexpdate, 0x00, sizeof (mexpdate));
+    memcpy(mexpdate, tmp, strlen(tmp));
+    //in real code you would check for errors in malloc here
+
+    strcpy(result, baTemp);
+    strcat(result, separator);
+    strcpy(mexpdate, result);
+    strcat(mexpdate, baTmp1);
+    //CTOS_LCDTPrintXY(2, 9, baTemp);
+    //CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 11, baTmp1);
+    //CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 12, result);
+    //CTOS_KBDGet(&key);
+    //CTOS_LCDTPrintXY(2, 13, expdate);
+    //CTOS_KBDGet(&key);
 
 
 
@@ -973,7 +1106,7 @@ char Get_PIN_Input(BYTE x, BYTE y, BYTE min, BYTE max, char mask, char *buf, BYT
 BYTE SignatureProcessing(void) {
     BYTE bKey;
 
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 4, "Print receipt ?       ");
     CTOS_LCDTPrintXY(1, 5, "Enter = Yes           ");
     CTOS_LCDTPrintXY(1, 6, "Cancel = No           ");
@@ -1011,7 +1144,6 @@ void StartTrans(BYTE bType) {
     BYTE baAmount[32];
     BYTE upload_tx_buf[1024];
     USHORT upload_tx_len;
-    BYTE pin[20];
     BYTE pin_len;
     ULONG ulAPRtn;
     BYTE *msg;
@@ -1037,22 +1169,21 @@ void StartTrans(BYTE bType) {
 
     //Confirm Transaction
 
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(2, 4, " Please Confirm");
     CTOS_LCDTPrintXY(2, 6, "   Withdraw");
     sprintf(temp, "   KSH %ld%02ld", g_ulAmt / 100, g_ulAmt % 100);
     memset(baAmount, 0x00, sizeof (baAmount));
     memcpy(baAmount, temp, strlen(temp));
     CTOS_LCDTPrintXY(2, 8, baAmount);
-
-
-    CTOS_LCDTPrintXY(1, 10, " OK TO CONFIRM");
-    CTOS_LCDTPrintXY(1, 12, " X TO CANCEL");
+    CTOS_LCDTPrintXY(1, 10, "   OK TO CONFIRM");
+    CTOS_LCDTPrintXY(1, 12, "   X TO CANCEL");
     CTOS_KBDGet(&key);
     //Amount okay Continue to Read Card
     if (key == d_KBD_ENTER) {
-        ClearScreen(4, 14);
+       ClearScreen(4, 26);
         CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD);
+       //EMVCL_ShowContactlessSymbol(NULL);
     }//Amount not OK, go back to re-enter
     else {
         return;
@@ -1060,7 +1191,7 @@ void StartTrans(BYTE bType) {
 
 
 
-    //EMVCL_ShowContactlessSymbol(NULL);
+    EMVCL_ShowContactlessSymbol(NULL);
 
     memset(&stACTData, 0, sizeof (EMVCL_ACT_DATA));
     memset(&stRCDataEx, 0, sizeof (EMVCL_RC_DATA_EX));
@@ -1129,7 +1260,7 @@ void StartTrans(BYTE bType) {
 
                     if ((bStatus & d_MK_SC_PRESENT)) {
                         // Check the CHIP Card is inserted 
-                        ClearScreen(4, 14);
+                        ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
@@ -1144,7 +1275,7 @@ void StartTrans(BYTE bType) {
                     rtn = CTOS_MSRRead(baTk1Buf, &usTk1Len, baTk2Buf, &usTk2Len, baTk3Buf, &usTk3Len);
                     if (rtn == d_OK && (!(usTk1Len == 0 && usTk2Len == 0 && usTk3Len == 0))) {
                         // MSR is read
-                        ClearScreen(4, 14);
+                        ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
@@ -1180,7 +1311,7 @@ void StartTrans(BYTE bType) {
                 isContactInterfaceSupport = TRUE;
                 isMastripeInterfaceSupport = TRUE;
 
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_TRY_OTHER_INTERFACE);
                 CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE_CARD);
                 CTOS_LCDTPrintXY(1, 6, baAmount);
@@ -1204,12 +1335,12 @@ void StartTrans(BYTE bType) {
                 isContactInterfaceSupport = TRUE;
                 isMastripeInterfaceSupport = TRUE;
 
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_UNSUPPORT_CARD);
                 CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE);
                 CTOS_LCDTPrintXY(1, 6, d_MSG_USE_OTHER_CARD);
                 CTOS_Delay(3000);
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_PRESENT_CARD);
                 CTOS_LCDTPrintXY(1, 5, baAmount);
                 EMVCL_ShowContactlessSymbol(NULL);
@@ -1229,7 +1360,7 @@ void StartTrans(BYTE bType) {
     DebugAddHEX("SCData Chip", stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
     DebugAddHEX("SCData Additional", stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
 
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, d_MSG_READ_CARD_OK);
     CTOS_LCDTPrintXY(1, 6, d_MSG_REMOVE_CARD);
     CTOS_Delay(1300);
@@ -1288,7 +1419,7 @@ void StartTrans(BYTE bType) {
     DebugAddINT("RC Analyze, Visa AOSA Present", stRCDataAnalyze.bVisaAOSAPresent);
     DebugAddHEX("RC Analyze, Visa AOSA", stRCDataAnalyze.baVisaAOSA, sizeof (stRCDataAnalyze.baVisaAOSA));
     DebugAddINT("RC Analyze, ODA Fail", stRCDataAnalyze.bODAFail);
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 4, "Checking Card CVM :");
     CTOS_Delay(2000);
     //After parsing transaction data, check if CVM is need and get the transaction result	
@@ -1299,19 +1430,19 @@ void StartTrans(BYTE bType) {
     if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_SIGNATURE) {
         CVMStr = "   CVM->Signature  ";
         NeedSignature = TRUE;
-        CTOS_LCDTPrintXY(1, 4, "SIGNATURE CVM MODE ");
-        CTOS_Delay(1000);
+        //CTOS_LCDTPrintXY(1, 4, "SIGNATURE CVM MODE ");
+        //CTOS_Delay(1000);
 
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_ONLPIN) {
         CVMStr = "     CVM->PIN      ";
-        ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(1, 4, "PIN CVM MODE ");
-        CTOS_Delay(1000);
+        ClearScreen(4, 26);
+        //CTOS_LCDTPrintXY(1, 4, "PIN CVM MODE ");
+        //CTOS_Delay(1000);
         int i2 = 0;
         CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
 
         if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
-            ClearScreen(4, 14);
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
             CTOS_Delay(1000);
             return;
@@ -1324,37 +1455,344 @@ ex:
         TLVDataAdd(0x95, 5, temp);
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
         CVMStr = "   CVM->No CVM Req  ";
-        ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(1, 4, "NO CVM REQUIRED ");
-        CTOS_Delay(1000);
+        ClearScreen(4, 26);
+        //CTOS_LCDTPrintXY(1, 4, "NO CVM REQUIRED ");
+        //CTOS_Delay(1000);
     }
 
 
     // TODO: Add your program here //
 
     int i2 = 0;
-    ClearScreen(4, 14);
-    CTOS_LCDTPrintXY(3, 5, "Enter DEFAULT  PIN:");
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(3, 5, "Enter  PIN:");
 
     if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
         CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
         CTOS_Delay(1000);
         return;
     }
-    
-    //Get Card Details
+    //=================================================================================================================//
+    //Get client Card Details
     getcarddata(&stRCDataEx);
-    withdraw_post(pin, amount, cardvendor, cardnumber, expdate);
     usTxResult = stRCDataAnalyze.usTransResult;
-    ClearScreen(4, 14);
-    //Online
+    ClearScreen(4, 26);
+    //Present marchant card
+    //ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_mCARD);
+    EMVCL_ShowContactlessSymbol(NULL);
+    memset(&stACTData, 0, sizeof (EMVCL_ACT_DATA));
+    memset(&stRCDataEx, 0, sizeof (EMVCL_RC_DATA_EX));
+    memset(&stRCDataAnalyze, 0, sizeof (EMVCL_RC_DATA_ANALYZE));
+
+    //Prepare Input Data
+    stACTData.bStart = d_EMVCL_ACT_DATA_START_A;
+    stACTData.bTagNum = 0;
+    stACTData.usTransactionDataLen = 0;
+
+    //Put 0x9F02 Amount, Authorized (Numeric)
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x9F;
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x02;
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x06;
+    wub_long_2_bcd(g_ulAmt, temp, &lenn);
+    memset(&TransaRelatedData[stACTData.usTransactionDataLen], 0, 6);
+    memcpy(&TransaRelatedData[stACTData.usTransactionDataLen + 6 - lenn], temp, lenn);
+    stACTData.usTransactionDataLen += 6;
+    stACTData.bTagNum++;
+
+    //Put 0x9F03
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x9F;
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x03;
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x06;
+    wub_long_2_bcd(g_ulCBAmt, temp, &lenn);
+    memset(&TransaRelatedData[stACTData.usTransactionDataLen], 0, 6);
+    memcpy(&TransaRelatedData[stACTData.usTransactionDataLen + 6 - lenn], temp, lenn);
+
+    stACTData.usTransactionDataLen += 6;
+    stACTData.bTagNum++;
+
+    //Put 0x9C
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x9C;
+    TransaRelatedData[stACTData.usTransactionDataLen++] = 0x01;
+    TransaRelatedData[stACTData.usTransactionDataLen++] = g_bTxntype;
+    stACTData.bTagNum++;
+
+    DebugAddHEX("In Data", TransaRelatedData, stACTData.usTransactionDataLen);
+
+    stACTData.pbaTransactionData = TransaRelatedData;
+
+    if (bType == d_INIT_TRANS) {
+        isContactlessInterfaceSupport = TRUE;
+        isContactInterfaceSupport = TRUE;
+        isMastripeInterfaceSupport = TRUE;
+
+        EMVCL_InitTransactionEx(stACTData.bTagNum, stACTData.pbaTransactionData, stACTData.usTransactionDataLen);
+
+        // Clear MSR
+        CTOS_MSRRead(baTk1Buf, &usTk1Len, baTk2Buf, &usTk2Len, baTk3Buf, &usTk3Len);
+
+        do {
+            do {
+                // Contactless transaction
+                if (isContactlessInterfaceSupport == TRUE) {
+                    ulAPRtn = EMVCL_PerformTransactionEx(&stRCDataEx);
+                    if (ulAPRtn != d_EMVCL_PENDING) {
+                        break;
+                    }
+                }
+
+                //Simulate a Contact transaction
+                if (isContactInterfaceSupport == TRUE) {
+                    //Check the ICC status
+                    CTOS_SCStatus(d_SC_USER, &bStatus);
+
+                    if ((bStatus & d_MK_SC_PRESENT)) {
+                        // Check the CHIP Card is inserted 
+                        ClearScreen(4, 26);
+                        CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
+                        CTOS_LCDTPrintXY(2, 6, baAmount);
+                        CTOS_Delay(3000);
+                        break;
+                    }
+                }
+
+                //Simulate a Magnetic Stripe transaction
+                if (isMastripeInterfaceSupport == TRUE) {
+                    usTk1Len = usTk2Len = usTk3Len = 128;
+                    // Read MSR
+                    rtn = CTOS_MSRRead(baTk1Buf, &usTk1Len, baTk2Buf, &usTk2Len, baTk3Buf, &usTk3Len);
+                    if (rtn == d_OK && (!(usTk1Len == 0 && usTk2Len == 0 && usTk3Len == 0))) {
+                        // MSR is read
+                        ClearScreen(4, 26);
+                        CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
+                        CTOS_LCDTPrintXY(2, 6, baAmount);
+                        CTOS_Delay(3000);
+                        break;
+                    }
+                }
+
+                CTOS_KBDHit(&bKey);
+                if (bKey == d_KBD_CANCEL) {
+                    if (isContactlessInterfaceSupport == FALSE) {
+                        return;
+                    }
+                    EMVCL_CancelTransaction();
+                }
+
+            } while (1);
+
+
+            DebugAddINT("Result rtn", ulAPRtn);
+            if (ulAPRtn == d_EMVCL_TX_CANCEL) {
+                return;
+            } else if (ulAPRtn == d_EMVCL_RC_DEK_SIGNAL) {
+                if (stRCDataEx.baChipData[0] == d_DEK_VISA_MOBILE_DEVICE_SEE_PHONE) {
+                    CTOS_LCDTPrintXY(1, 6, d_MSG_SEE_PHONE);
+                } else if (stRCDataEx.baChipData[0] == d_DEK_VISA_EUR_CL_TIG_FATAL_COMMUNICATION) {
+                    CTOS_LCDTPrintXY(1, 6, d_MSG_READ_CARD_ERR);
+                }
+            } else if (ulAPRtn == d_EMVCL_RC_DATA) {
+                break;
+            } else if (ulAPRtn == d_EMVCL_RC_FALLBACK) {
+                // Disable contactless interface
+                isContactlessInterfaceSupport = FALSE;
+                isContactInterfaceSupport = TRUE;
+                isMastripeInterfaceSupport = TRUE;
+
+                ClearScreen(4, 26);
+                CTOS_LCDTPrintXY(1, 4, d_MSG_TRY_OTHER_INTERFACE);
+                CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE_CARD);
+                CTOS_LCDTPrintXY(1, 6, baAmount);
+                CTOS_Delay(3000);
+            } else if (ulAPRtn == d_EMVCL_RC_NO_CARD) {
+                msg = d_MSG_NO_CARD;
+                ShowRtn(4, msg, ulAPRtn);
+                CTOS_KBDGet(&bKey);
+                return;
+            } else if (ulAPRtn == d_EMVCL_RC_MORE_CARDS) {
+                msg = d_MSG_MORE_CARD;
+                ShowRtn(4, msg, ulAPRtn);
+                CTOS_KBDGet(&bKey);
+                return;
+            } else if (ulAPRtn == d_EMVCL_TRY_AGAIN) {
+                msg = d_MSG_TRY_AGAIN;
+                ShowRtn(4, msg, ulAPRtn);
+                CTOS_Delay(3000);
+            } else {
+                isContactlessInterfaceSupport = TRUE;
+                isContactInterfaceSupport = TRUE;
+                isMastripeInterfaceSupport = TRUE;
+
+                ClearScreen(4, 26);
+                CTOS_LCDTPrintXY(1, 4, d_MSG_UNSUPPORT_CARD);
+                CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE);
+                CTOS_LCDTPrintXY(1, 6, d_MSG_USE_OTHER_CARD);
+                CTOS_Delay(3000);
+                ClearScreen(4, 26);
+                CTOS_LCDTPrintXY(1, 4, d_MSG_PRESENT_mCARD);
+                CTOS_LCDTPrintXY(1, 5, baAmount);
+                EMVCL_ShowContactlessSymbol(NULL);
+            }
+        } while (1);
+    } else {
+        ulAPRtn = EMVCL_StartTransactionEx(&stACTData, &stRCDataEx);
+        if (ulAPRtn == d_EMVCL_TX_CANCEL) {
+            return;
+        }
+    }
+
+    DebugAddINT("SID", stRCDataEx.bSID);
+    DebugAddHEX("SCData DateTime", stRCDataEx.baDateTime, sizeof (stRCDataEx.baDateTime));
+    DebugAddHEX("SCData Track1", stRCDataEx.baTrack1Data, stRCDataEx.bTrack1Len);
+    DebugAddHEX("SCData Track2", stRCDataEx.baTrack2Data, stRCDataEx.bTrack2Len);
+    DebugAddHEX("SCData Chip", stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
+    DebugAddHEX("SCData Additional", stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
+
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(1, 5, d_MSG_READ_CARD_OK);
+    CTOS_LCDTPrintXY(1, 6, d_MSG_REMOVE_CARD);
+    CTOS_Delay(1300);
+
+    //Parse transaction response data	
+    //Parse Scheme ID
+    switch (stRCDataEx.bSID) {
+        case d_VW_SID_PAYPASS_MAG_STRIPE:
+            msg = "  PayPass M-Stripe ";
+            break;
+        case d_VW_SID_PAYPASS_MCHIP:
+            msg = "    PayPass MChip  ";
+            break;
+        case d_VW_SID_VISA_OLD_US:
+            msg = "  VISA Old US MSD   ";
+            break;
+        case d_VW_SID_VISA_WAVE_MSD:
+            msg = "    VisaWave MSD    ";
+            break;
+        case d_VW_SID_VISA_WAVE_2:
+            msg = "     VisaWave 2    ";
+            break;
+        case d_VW_SID_VISA_WAVE_QVSDC:
+            msg = "   VisaWave qVSDC   ";
+            break;
+        case d_VW_SID_AE_EMV:
+            msg = "   ExpressPay EMV  ";
+            break;
+        case d_VW_SID_AE_MAG_STRIPE:
+            msg = "      AE M-Stripe    ";
+            break;
+        case d_VW_SID_JCB_WAVE_2:
+            msg = "   J/Speedy Wave 2    ";
+            break;
+        case d_VW_SID_JCB_WAVE_QVSDC:
+            msg = "   J/Speedy qVSDC  ";
+            break;
+        case d_VW_DISCOVER:
+            msg = "        Zip        ";
+            break;
+        default:
+            msg = "   CardType No Def. ";
+            break;
+    }
+
+    //Parse received chip and additional data 
+    TLVDataClear();
+    TLVDataParse(stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
+    TLVDataParse(stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
+
+    EMVCL_AnalyzeTransactionEx(&stRCDataEx, &stRCDataAnalyze);
+
+    DebugAddINT("RC Analyze, Trans Result", stRCDataAnalyze.usTransResult);
+    DebugAddINT("RC Analyze, CVM Analysis", stRCDataAnalyze.bCVMAnalysis);
+    DebugAddHEX("RC Analyze, CVM Result", stRCDataAnalyze.baCVMResults, sizeof (stRCDataAnalyze.baCVMResults));
+    DebugAddINT("RC Analyze, Visa AOSA Present", stRCDataAnalyze.bVisaAOSAPresent);
+    DebugAddHEX("RC Analyze, Visa AOSA", stRCDataAnalyze.baVisaAOSA, sizeof (stRCDataAnalyze.baVisaAOSA));
+    DebugAddINT("RC Analyze, ODA Fail", stRCDataAnalyze.bODAFail);
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(1, 4, "Checking Card CVM :");
+    CTOS_Delay(2000);
+    //After parsing transaction data, check if CVM is need and get the transaction result	
+    //CVM Require - If Card need CVM, performing CVM at this moment
+    NeedSignature = FALSE;
+    CVMStr = "                    ";
+
+    if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_SIGNATURE) {
+        CVMStr = "   CVM->Signature  ";
+        NeedSignature = TRUE;
+        //CTOS_LCDTPrintXY(1, 4, "SIGNATURE CVM MODE ");
+        //CTOS_Delay(1000);
+        int i3 = 0;
+        CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
+
+        if (enter_pin(3, 6, 4, 16, '*', pin, &i3) == FALSE) {
+            ClearScreen(4, 26);
+            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            CTOS_Delay(1000);
+            return;
+        }
+
+    } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_ONLPIN) {
+        CVMStr = "     CVM->PIN      ";
+        ClearScreen(4, 26);
+        //CTOS_LCDTPrintXY(1, 4, "PIN CVM MODE ");
+        //CTOS_Delay(1000);
+        int i3 = 0;
+        CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
+
+        if (enter_pin(3, 6, 4, 16, '*', pin, &i3) == FALSE) {
+            ClearScreen(4, 26);
+            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            CTOS_Delay(1000);
+            return;
+        }
+
+        //set TVR byte 3 if need
+
+        TLVDataGet(0x95, temp);
+        temp[2] |= 0x04;
+        TLVDataAdd(0x95, 5, temp);
+    } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
+        CVMStr = "   CVM->No CVM Req  ";
+        ClearScreen(4, 26);
+        //CTOS_LCDTPrintXY(1, 4, "NO CVM REQUIRED ");
+        //CTOS_Delay(1000);
+        int i3 = 0;
+        CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
+
+        if (enter_pin(3, 6, 4, 16, '*', pin, &i3) == FALSE) {
+            ClearScreen(4, 26);
+            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            CTOS_Delay(1000);
+            return;
+        }
+    } else {
+        int i4 = 0;
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(3, 5, "Enter DEFAULT  PIN:");
+
+        if (enter_pin(3, 6, 4, 16, '*', pin, &i4) == FALSE) {
+            ClearScreen(4, 26);
+            CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
+            CTOS_Delay(1000);
+            return;
+        }
+    }
+
+    // TODO: Add your program here //
+
+
+
+    //get card details
+    getmarchantcarddata(&stRCDataEx);
+    //SEND REQUEST
+
     if (usTxResult == d_EMVCL_OUTCOME_ONL) {
 
-        withdraw_post(pin, amount, cardvendor, cardnumber, expdate);
+
+        withdraw_post(pin, g_baInputAmt, cardvendor, cardnumber, expdate, mpin, mcardvendor, mcardnumber, mexpdate);
 
         //        
-        //        ClearScreen(4, 14);
+        //        ClearScreen(4, 26);
         //        //CTOS_LCDTPrintXY(1, 5, d_MSG_ONLINE);
         //        //CTOS_LCDTPrintXY(1, 6, "                    ");
         //
@@ -1385,6 +1823,8 @@ ex:
         //
         //        //send upload data and get the online authen result
         //        usTxResult = Online_Process(upload_tx_buf, upload_tx_len);
+
+
     }
 
     Print_Receipt(&stRCDataEx, NeedSignature, g_ulAmt);
@@ -1394,17 +1834,19 @@ ex:
             //usTxResult = d_EMVCL_OUTCOME_DECLINED;
         }
     }
-
-    //ClearScreen(4, 14);
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(3, 6, "Completed");
+    return;
+    //ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, msg);
 
 
     if (usTxResult == d_EMVCL_OUTCOME_APPROVAL) {
         if (g_bTxntype == 0x20) {
-            ClearScreen(4, 14);
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(1, 6, d_MSG_REFUND);
         } else {
-            ClearScreen(4, 14);
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(1, 6, d_MSG_APPROVED);
         }
         CTOS_LCDTPrintXY(1, 7, baAmount);
@@ -1420,11 +1862,11 @@ ex:
     } else if (usTxResult == d_EMVCL_OUTCOME_DECLINED) {
         if (g_IsHostBusy) {
             g_IsHostBusy = FALSE;
-            ClearScreen(4, 14);
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(1, 6, d_MSG_HOST_BUSY);
             CTOS_LCDTPrintXY(1, 7, d_MSG_DECLINE);
         } else {
-            ClearScreen(4, 14);
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(1, 6, d_MSG_DECLINE);
         }
 
@@ -1456,8 +1898,8 @@ void SetHostBusy(void) {
 void SelectTxnType(void) {
     BYTE bKey;
 
-    ClearScreen(4, 14);
-    ShowTitle("  Select Txn Type   ");
+    ClearScreen(4, 26);
+    ShowTitle("  Select Txn Type     ");
     CTOS_LCDTPrintXY(1, 4, "1.	Purchase");
     CTOS_LCDTPrintXY(1, 5, "2.	Cash");
     CTOS_LCDTPrintXY(1, 6, "3.	Cash Back");
@@ -1499,71 +1941,49 @@ void Transaction(void) {
 
     //Perform Transaction via Transaction APIs	
     iBatchNo = 0;
-    while (1) {
-        ClearScreen(4, 14);
-        EMVCL_StartIdleLEDBehavior(NULL);
-        ShowTitle("  Transaction       ");
-        CTOS_LCDTPrintXY(1, 4, "Welcome        ");
 
-        switch (g_bTxntype) {
-            case 0x00:
-                pstr = "    Transaction     ";
-                break;
-            case 0x01:
-                pstr = "    Transaction     ";
-                break;
-            case 0x09:
-                pstr = "    Transaction  ";
-                break;
-            case 0x20:
-                pstr = "    Transaction    ";
-                break;
-        }
-        ShowTitle(pstr);
-        ulRtn = InputValue();
+    ClearScreen(4, 26);
+    EMVCL_StartIdleLEDBehavior(NULL);
+    ShowTitle("  Cash Withdraw          ");
+    ulRtn = InputValue();
 
-        if (ulRtn == d_NO) {
-            break;
-        }
-
-        //If the mutual authen was ok, start a transaction.
-
-
-        StartTrans(d_INIT_TRANS);
-
-        CTOS_Delay(1000);
+    if (ulRtn == d_NO) {
+        return;
+    } else {
     }
+    //If the mutual authen was ok, start a transaction.
+
+
+    StartTrans(d_INIT_TRANS);
+
+    CTOS_Delay(1000);
+
 
     EMVCL_StopIdleLEDBehavior(NULL);
     EMVCL_SetLED(0x0F, 0x08);
 }
 
 void Do_Transaction(void) {
-    BYTE bKey;
+    //BYTE bKey;
 
     g_IsHostBusy = FALSE;
 
     while (1) {
-        ClearScreen(4, 14);
-        ShowTitle("    Transaction     ");
+        ClearScreen(4, 26);
+        ShowTitle("    Cash Withdraw     ");
+        CTOS_LCDTPrintXY(3, 5, "   Welcome ");
+        CTOS_LCDTPrintXY(3, 6, "OK to Withdraw ");
+        CTOS_KBDGet(&key);
+        switch (key) {
+            case d_KBD_ENTER:
+                Transaction();
+                break;
 
-        CTOS_LCDTPrintXY(1, 4, "1. Transact     ");
-        CTOS_LCDTPrintXY(1, 5, "2. Set Type     ");
-        CTOS_LCDTPrintXY(1, 6, "3. Host Status    ");
-next:
-        CTOS_KBDGet(&bKey);
-
-        if (bKey == '1') {
-            Transaction();
-        } else if (bKey == '2') {
-            SelectTxnType();
-        } else if (bKey == '3') {
-            SetHostBusy();
-        } else if (bKey == d_KBD_CANCEL) {
-            break;
-        } else {
-            goto next;
+            case d_KBD_CANCEL:
+                return;
+                break;
         }
     }
+
 }
 

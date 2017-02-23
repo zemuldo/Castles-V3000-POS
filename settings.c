@@ -20,7 +20,7 @@ void settings(void) {
     {
 
         BYTE key;
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
         ShowTitle("  DEVICE SETTINGS              ");
         while (1) {
             
@@ -32,14 +32,14 @@ void settings(void) {
 
             switch (key) {
                 case '1':
-                    CTOS_LCDTClearDisplay();
+                    ClearScreen(4, 26);
 
 
                     gsmmain();
                     break;
                
                 case '2':
-                    CTOS_LCDTClearDisplay();
+                    ClearScreen(4, 26);
                     systemopsmain();
                     break;
 

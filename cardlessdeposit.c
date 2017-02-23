@@ -34,7 +34,21 @@ ULONG ulRtn;
 USHORT usTxResult;
 char baInput[20];
 int iLen;
-BYTE pin[20];
+
+BYTE cvv[3];
+BYTE expdate[6];
+BYTE cardtype[255];
+BYTE cardnumber[17];
+BYTE cardvendor[255];
+BYTE mpin[5];
+
+BYTE mcvv[3];
+BYTE mexpdate[6];
+BYTE mcardtype[255];
+BYTE mcardnumber[17];
+BYTE mcardvendor[255];
+BYTE mpin[5];
+
 UCHAR pbBuf[1024];
 STR sBuf[1024];
 BYTE baTmp[5000];
@@ -77,8 +91,6 @@ void printreceipt(void)
 
 {
     EMVCL_RC_DATA_EX *data; ULONG ulValue;
-    CTOS_PrinterPutString("================================");
-    PrintBlank();
     //Store ID
     sprintf(baBuf, "Store ID    :      8220101400255");
     CTOS_PrinterPutString(baBuf);
@@ -87,6 +99,9 @@ void printreceipt(void)
     sprintf(baBuf, "Terminal ID :           01401493");
     CTOS_PrinterPutString(baBuf);
     CTOS_PrinterPutString("================================");
+    
+     //Type
+    sprintf(baBuf, "Type :     Cardless Deposit");
     
     //Date
     memcpy(baTemp, data->baDateTime, 4);
@@ -118,7 +133,7 @@ void printreceipt(void)
     CTOS_PrinterPutString(" ");
     
     // AMOUNT
-    sprintf(baBuf, "     AMOUNT: KSH %ld.%02ld", ulValue / 100, ulValue % 100);
+    sprintf(baBuf, "     AMOUNT: KSH %ld", ulValue );
     CTOS_PrinterPutString(baBuf);
 
     CTOS_PrinterPutString("================================");
@@ -134,7 +149,7 @@ void do_transact(void) {
     BYTE baAmount[32];
     BYTE upload_tx_buf[1024];
     USHORT upload_tx_len;
-    BYTE pin[20];
+    BYTE mpin[20];
     BYTE pin_len;
     ULONG ulAPRtn;
     BYTE *msg;
@@ -152,67 +167,66 @@ void do_transact(void) {
     BYTE key;
     
     //Prompt amount to be entered
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     ulRtn = InputValue();
 
     if (ulRtn == d_NO) {
 
     }
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     DebugAddINT("               ", 0);
     DebugAddINT("               ", 0);
-    
-
+    BYTE baBuff[256];
+    BYTE depositaccnt[15];
+    BYTE accountNo[256];
     STR * keyboardLayoutNumberWithRadixPoint[] = {"0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", "", "."};
     STR * keyboardLayoutEnglish[] = {" 0", "qzQZ1", "abcABC2", "defDEF3", "ghiGHI4",
         "jklJKL5", "mnoMNO6", "prsPRS7", "tuvTUV8", "wxyWXY9", ":;/\\|?,.<>", ".!@#$%^&*()"};
     STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
         ""};
-    BYTE baBuff[256];
-    BYTE depositaccnt[256];
-    BYTE accountNo[256];
-
+    ShowTitle("  Cardless Deposit              ");
     // amount - ascii to int
     g_ulAmt = ASCII2Int(g_baInputAmt, g_usAmtLen);
     g_ulCBAmt = ASCII2Int(g_baInputCBAmt, g_usCBAmtLen);
     g_ulAmt += g_ulCBAmt;
 
     //Confirm Amount
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(2, 4, "Please Confirm");
     CTOS_LCDTPrintXY(2, 6, "   Deposit");
-    sprintf(temp, "   KSH %ld.%02ld", g_ulAmt / 100, g_ulAmt % 100);
+    sprintf(temp, "   KSH %ld", g_ulAmt);
     memset(baAmount, 0x00, sizeof (baAmount));
     memcpy(baAmount, temp, strlen(temp));
     CTOS_LCDTPrintXY(2, 8, baAmount);
 
-    CTOS_LCDTPrintXY(1, 10, " OK TO CONFIRM");
-    CTOS_LCDTPrintXY(1, 12, " X TO CANCEL");
+    CTOS_LCDTPrintXY(1, 10, "   OK TO CONFIRM");
+    CTOS_LCDTPrintXY(1, 12, "   X TO CANCEL");
     
     CTOS_KBDGet(&key);
     if (key == d_KBD_ENTER) {
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
     }
     else{return;}
     //Get the account Number
-   ClearScreen(4, 14);
+   ClearScreen(4, 26);
         CTOS_LCDTPrintXY(2, 5, "Enter Account NO:");
-       CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, depositaccnt,
-                    17);
+       CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, depositaccnt,15);
        //confirm Account Number
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(3, 5, "Please Confirm");
-    CTOS_LCDTPrintXY(3, 6, "Account Number:");
-    CTOS_LCDTPrintXY(3, 7, depositaccnt);
+    CTOS_LCDTPrintXY(3, 6, "Deposit KSH:  ");
+    CTOS_LCDTPrintXY(14, 6, baAmount);
+    CTOS_LCDTPrintXY(3, 7, "To Account Number:");
+    CTOS_LCDTPrintXY(3, 8, depositaccnt);
      //Pressing okay-Accepting accnt Pressing X returns
     CTOS_LCDTPrintXY(3, 10, " OK TO CONFIRM");
-    CTOS_LCDTPrintXY(1, 11, " X TO CANCEL");
+    CTOS_LCDTPrintXY(3, 11, " X TO CANCEL");
     CTOS_KBDGet(&key);
     
     if (key == d_KBD_ENTER) {
         //Amount & Accnt okay Continue to Read Card
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
     }//Amount not OK, go back to re-enter
     else {
         return;
@@ -220,7 +234,7 @@ void do_transact(void) {
 
     //Getting Agent card details.
     EMVCL_ShowContactlessSymbol(NULL);
-    CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD);
+    CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_mCARD);
     memset(&stACTData, 0, sizeof (EMVCL_ACT_DATA));
     memset(&stRCDataEx, 0, sizeof (EMVCL_RC_DATA_EX));
     memset(&stRCDataAnalyze, 0, sizeof (EMVCL_RC_DATA_ANALYZE));
@@ -288,7 +302,7 @@ void do_transact(void) {
 
                     if ((bStatus & d_MK_SC_PRESENT)) {
                         // Check the CHIP Card is inserted 
-                        ClearScreen(4, 14);
+                        ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
@@ -303,7 +317,7 @@ void do_transact(void) {
                     rtn = CTOS_MSRRead(baTk1Buf, &usTk1Len, baTk2Buf, &usTk2Len, baTk3Buf, &usTk3Len);
                     if (rtn == d_OK && (!(usTk1Len == 0 && usTk2Len == 0 && usTk3Len == 0))) {
                         // MSR is read
-                        ClearScreen(4, 14);
+                        ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
@@ -339,7 +353,7 @@ void do_transact(void) {
                 isContactInterfaceSupport = TRUE;
                 isMastripeInterfaceSupport = TRUE;
 
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_TRY_OTHER_INTERFACE);
                 CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE_CARD);
                 CTOS_LCDTPrintXY(1, 6, baAmount);
@@ -363,12 +377,12 @@ void do_transact(void) {
                 isContactInterfaceSupport = TRUE;
                 isMastripeInterfaceSupport = TRUE;
 
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_UNSUPPORT_CARD);
                 CTOS_LCDTPrintXY(1, 5, d_MSG_INSERT_OR_SWIPE);
                 CTOS_LCDTPrintXY(1, 6, d_MSG_USE_OTHER_CARD);
                 CTOS_Delay(3000);
-                ClearScreen(4, 14);
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(1, 4, d_MSG_PRESENT_CARD);
                 CTOS_LCDTPrintXY(1, 5, baAmount);
                 EMVCL_ShowContactlessSymbol(NULL);
@@ -388,9 +402,9 @@ void do_transact(void) {
     DebugAddHEX("SCData Chip", stRCDataEx.baChipData, stRCDataEx.usChipDataLen);
     DebugAddHEX("SCData Additional", stRCDataEx.baAdditionalData, stRCDataEx.usAdditionalDataLen);
 
-    ClearScreen(4, 14);
-    CTOS_LCDTPrintXY(1, 5, d_MSG_READ_CARD_OK);
-    CTOS_LCDTPrintXY(1, 6, d_MSG_REMOVE_CARD);
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(3, 5, d_MSG_READ_CARD_OK);
+    CTOS_LCDTPrintXY(3, 6, d_MSG_REMOVE_CARD);
     CTOS_Delay(1300);
 
     //Parse transaction response data	
@@ -447,7 +461,7 @@ void do_transact(void) {
     DebugAddINT("RC Analyze, Visa AOSA Present", stRCDataAnalyze.bVisaAOSAPresent);
     DebugAddHEX("RC Analyze, Visa AOSA", stRCDataAnalyze.baVisaAOSA, sizeof (stRCDataAnalyze.baVisaAOSA));
     DebugAddINT("RC Analyze, ODA Fail", stRCDataAnalyze.bODAFail);
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 4, "Checking Card CVM :");
     CTOS_Delay(2000);
     //After parsing transaction data, check if CVM is need and get the transaction result	
@@ -458,19 +472,19 @@ void do_transact(void) {
     if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_SIGNATURE) {
         CVMStr = "   CVM->Signature  ";
         NeedSignature = TRUE;
-        CTOS_LCDTPrintXY(1, 4, "SIGNATURE CVM MODE ");
-        CTOS_Delay(1000);
+        //CTOS_LCDTPrintXY(1, 4, "SIGNATURE CVM MODE ");
+        //CTOS_Delay(1000);
 
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_ONLPIN) {
         CVMStr = "     CVM->PIN      ";
-        ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(1, 4, "PIN CVM MODE ");
-        CTOS_Delay(1000);
+        ClearScreen(4, 26);
+        //CTOS_LCDTPrintXY(1, 4, "PIN CVM MODE ");
+        //CTOS_Delay(1000);
         int i2 = 0;
         CTOS_LCDTPrintXY(1, 4, "Enter ONL PIN :");
 
-        if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
-            ClearScreen(4, 14);
+        if (enter_pin(3, 6, 4, 16, '*', mpin, &i2) == FALSE) {
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
             CTOS_Delay(1000);
             return;
@@ -483,31 +497,30 @@ ex:
         TLVDataAdd(0x95, 5, temp);
     } else if (stRCDataAnalyze.bCVMAnalysis == d_EMVCL_CVM_REQUIRED_NOCVM) {
         CVMStr = "   CVM->No CVM Req  ";
-        ClearScreen(4, 14);
-        CTOS_LCDTPrintXY(1, 4, "NO CVM REQUIRED ");
-        CTOS_Delay(1000);
+        ClearScreen(4, 26);
+        //CTOS_LCDTPrintXY(1, 4, "NO CVM REQUIRED ");
+        //CTOS_Delay(1000);
     }
 
 
     // TODO: Add your program here //
 
     int i2 = 0;
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(3, 5, "Enter DEFAULT  PIN:");
 
-    if (enter_pin(3, 6, 4, 16, '*', pin, &i2) == FALSE) {
-        ClearScreen(4, 14);
+    if (enter_pin(3, 6, 4, 16, '*', mpin, &i2) == FALSE) {
+        ClearScreen(4, 26);
         CTOS_LCDTPrintXY(1, 4, "PIN By Pass       ");
         CTOS_Delay(1000);
         return;
     }
 
-
+    
     usTxResult = stRCDataAnalyze.usTransResult;
-    ClearScreen(4, 14);
-    CTOS_LCDTPrintXY(1, 4, "   Authenticating...                 ");
-    CTOS_LCDTPrintXY(2, 6, " Processing...");
-    cardles_curlpostmain(baAmount, baBuff);
+    ClearScreen(4, 26);
+    getmarchantcarddata(&stRCDataEx);
+    cardles_curlpostmain(g_baInputAmt,depositaccnt,mpin,mcardvendor, mcardnumber, mexpdate);
 
 
 }
@@ -520,26 +533,13 @@ void transact(void) {
     //Perform Transaction via Transaction APIs	
     iBatchNo = 0;
     while (1) {
-        ClearScreen(4, 14);
+        ClearScreen(4, 26);
         EMVCL_StartIdleLEDBehavior(NULL);
-        ShowTitle("  Deposit       ");
+        ShowTitle("  Cardless Deposit           ");
         CTOS_LCDTPrintXY(1, 4, "Welcome        ");
 
-        switch (g_bTxntype) {
-            case 0x00:
-                pstr = "    Transaction     ";
-                break;
-            case 0x01:
-                pstr = "    Transaction    ";
-                break;
-            case 0x09:
-                pstr = "    Transaction  ";
-                break;
-            case 0x20:
-                pstr = "    Transaction    ";
-                break;
-        }
-        ClearScreen(4, 14);
+        
+        ClearScreen(4, 26);
         ShowTitle(pstr);
         ulRtn = InputValue();
 

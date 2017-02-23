@@ -49,6 +49,8 @@ void create_account(void) {
 
     int x = 0;
     while (x == 0) {
+        ClearScreen(4, 26);
+        ShowTitle("    Account Opening        ");
 
 
         //Define letter mapping to each key
@@ -68,18 +70,17 @@ void create_account(void) {
         CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
         //setfont displayed on the screen.
         CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
-        CTOS_LCDTClearDisplay();
-
+        ClearScreen(4, 16);
         CTOS_LCDTPrintXY(4, 4, "First Name:");
 
-        CTOS_UIKeypad(4, 5, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, fname, 13);
+        CTOS_UIKeypad(4, 5, keyboardLayoutEnglish, 40, 80, d_FALSE, d_FALSE, 0, 0, fname, 13);
 
         CTOS_LCDTPrintXY(4, 6, "Middle Name:");
 
-        CTOS_UIKeypad(4, 7, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, mname, 13);
+        CTOS_UIKeypad(4, 7, keyboardLayoutEnglish, 40, 80, d_FALSE, d_FALSE, 0, 0, mname, 13);
         //CTOS_LCDTPrintXY(4, 7, baBuff);
         CTOS_LCDTPrintXY(4, 8, "Last Name:");
-        CTOS_UIKeypad(4, 9, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, lname, 13);
+        CTOS_UIKeypad(4, 9, keyboardLayoutEnglish, 40, 80, d_FALSE, d_FALSE, 0, 0, lname, 13);
         //Mobile Number
         CTOS_LCDTPrintXY(4, 10, "Phone Number:");
         CTOS_UIKeypad(4, 11, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, mobile, 11);
@@ -88,7 +89,7 @@ void create_account(void) {
         CTOS_UIKeypad(4, 13, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, idno, 9);
 
         //send the account creation request
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
 
         CTOS_LCDTPrintXY(2, 4, "Confirm Details");
         CTOS_LCDTPrintXY(2, 6, "First Name:");
@@ -109,6 +110,7 @@ void create_account(void) {
             break;
         } else {
             x = 0;
+            return;
         }
 
     }
@@ -119,44 +121,44 @@ void create_account(void) {
     return;
 }
 
-void parse_object(char *root) {
-    cJSON* responseExitCode = NULL;
-    cJSON* message = NULL;
-    cJSON* accountnumber = NULL;
-    cJSON* accounttype = NULL;
-    cJSON* accountname = NULL;
-
-    int i;
-
-
-    for (i = 0; i < cJSON_GetArraySize(root); i++) {
-        responseExitCode = cJSON_GetObjectItem(root, "responseExitCode");
-        message = cJSON_GetObjectItem(root, "message");
-        accountnumber = cJSON_GetObjectItem(root, "accountnumber");
-        accounttype = cJSON_GetObjectItem(root, "accounttype");
-        accountname = cJSON_GetObjectItem(root, "accountname");
-
-        sprintf(baBuf, "ID No.: %s", responseExitCode);
-        CTOS_PrinterPutString(baBuf);
-
-    }
-}
+//void parse_object(char *root) {
+//    cJSON* responseExitCode = NULL;
+//    cJSON* message = NULL;
+//    cJSON* accountnumber = NULL;
+//    cJSON* accounttype = NULL;
+//    cJSON* accountname = NULL;
+//
+//    int i;
+//
+//
+//    for (i = 0; i < cJSON_GetArraySize(root); i++) {
+//        responseExitCode = cJSON_GetObjectItem(root, "responseExitCode");
+//        message = cJSON_GetObjectItem(root, "message");
+//        accountnumber = cJSON_GetObjectItem(root, "accountnumber");
+//        accounttype = cJSON_GetObjectItem(root, "accounttype");
+//        accountname = cJSON_GetObjectItem(root, "accountname");
+//
+//        sprintf(baBuf, "ID No.: %s", responseExitCode);
+//        CTOS_PrinterPutString(baBuf);
+//
+//    }
+//}
 
 /* Parse text to JSON, then render back to text, and print! */
 void account_doit(char *text) {
-    CTOS_LCDTClearDisplay();
+    ClearScreen(4, 26);
     CTOS_KBDGet(&key);
     char *jsonout;
     cJSON *json;
 
     json = cJSON_Parse(text);
     if (!json) {
-        //CTOS_LCDTClearDisplay();
+        //ClearScreen(4, 26);
         //CTOS_LCDTPrintXY(4, 6, " Response:");
         //CTOS_KBDGet(&key);
         //CTOS_LCDTPrintXY(4, 7, cJSON_GetErrorPtr());
     } else {
-        //CTOS_LCDTClearDisplay();
+        //ClearScreen(4, 26);
         jsonout = cJSON_Print(json);
         cJSON_Delete(json);
         //CTOS_LCDTPrintXY(4, 6, " Response:");
@@ -212,12 +214,11 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s) {
     return size*nmemb;
 }
 
-int account_post(BYTE fname[23], BYTE mname[23], BYTE lname[23], BYTE mobile[11], BYTE idno[9]) {
+int account_post(BYTE name1[23], BYTE name2[23], BYTE name3[23], BYTE mobileno[11], BYTE idnumb[9]) {
 
     BYTE key;
     BYTE sBuf[128];
     int accntvalidation = 0;
-
     {
         cJSON *root, *fmt, *img, *thm, *fld;
         int i; /* declare a few. */
@@ -226,11 +227,11 @@ int account_post(BYTE fname[23], BYTE mname[23], BYTE lname[23], BYTE mobile[11]
 
         //build json object-string
         root = cJSON_CreateObject();
-        cJSON_AddItemToObject(root, "firstName", cJSON_CreateString(fname));
-        cJSON_AddItemToObject(root, "middleName", cJSON_CreateString(mname));
-        cJSON_AddItemToObject(root, "lastName", cJSON_CreateString(lname));
-        cJSON_AddItemToObject(root, "mobileNo", cJSON_CreateString(mobile));
-        cJSON_AddItemToObject(root, "nationalID", cJSON_CreateString(idno));
+        cJSON_AddItemToObject(root, "firstName", cJSON_CreateString(name1));
+        cJSON_AddItemToObject(root, "middleName", cJSON_CreateString(name2));
+        cJSON_AddItemToObject(root, "lastName", cJSON_CreateString(name3));
+        cJSON_AddItemToObject(root, "mobileNo", cJSON_CreateString(mobileno));
+        cJSON_AddItemToObject(root, "nationalID", cJSON_CreateString(idnumb));
 
 
         jsonout = cJSON_Print(root);
@@ -239,8 +240,8 @@ int account_post(BYTE fname[23], BYTE mname[23], BYTE lname[23], BYTE mobile[11]
 
         CURL *curl;
         CURLcode res;
-        CTOS_LCDTClearDisplay();
-        CTOS_LCDTPrintXY(3, 2, "Sending........");
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(3, 5, "Sending........");
 
         curl = curl_easy_init();
         if (curl) {
@@ -263,38 +264,38 @@ int account_post(BYTE fname[23], BYTE mname[23], BYTE lname[23], BYTE mobile[11]
             res = curl_easy_perform(curl);
 
             //parse json object;
-            CTOS_LCDTClearDisplay();
-            char *jsonresponse;
-            jsonresponse = malloc(sizeof (char) * strlen(s.ptr));
-            strcpy(jsonresponse, s.ptr);
-            account_doit(jsonresponse);
-            cJSON * root = cJSON_Parse(s.ptr);
-            responseExitCode = cJSON_GetObjectItem(root, "responseExitCode")->valuestring;
-            message = cJSON_GetObjectItem(root, "message")->valuestring;
-            accountnumber = cJSON_GetObjectItem(root, "accountnumber")->valuestring;
-            accounttype = cJSON_GetObjectItem(root, "accounttype")->valuestring;
-            accountname = cJSON_GetObjectItem(root, "accountname")->valuestring;
-            CTOS_LCDTPrintXY(4, 6, responseExitCode);
-            CTOS_LCDTPrintXY(4, 7, message);
-            CTOS_LCDTPrintXY(4, 8, accountnumber);
-            CTOS_LCDTPrintXY(4, 9, accountname);
-            CTOS_KBDGet(&key);
 
-            int http_code = 0;
+
+            long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
-                CTOS_LCDTClearDisplay();
-                CTOS_LCDTPrintXY(4, 6, " Successful");
+                ClearScreen(4, 26);
+                char *jsonresponse;
+                jsonresponse = malloc(sizeof (char) * strlen(s.ptr));
+                strcpy(jsonresponse, s.ptr);
+                account_doit(jsonresponse);
+                cJSON * root = cJSON_Parse(s.ptr);
+                responseExitCode = cJSON_GetObjectItem(root, "responseExitCode")->valuestring;
+                message = cJSON_GetObjectItem(root, "message")->valuestring;
+                accountnumber = cJSON_GetObjectItem(root, "accountnumber")->valuestring;
+                accounttype = cJSON_GetObjectItem(root, "accounttype")->valuestring;
+                accountname = cJSON_GetObjectItem(root, "accountname")->valuestring;
+                //CTOS_LCDTPrintXY(4, 6, responseExitCode);
+                //CTOS_LCDTPrintXY(4, 7, message);
+                //CTOS_LCDTPrintXY(4, 8, accountnumber);
+                //CTOS_LCDTPrintXY(4, 9, accountname);
+                //CTOS_KBDGet(&key);
+                CTOS_LCDTPrintXY(4, 6, message);
                 CTOS_KBDGet(&key);
-                CTOS_Delay(3000);
                 accntvalidation = 1;
                 printaccount();
+                CTOS_KBDGet(&key);
                 print_agentrcpt();
                 free(s.ptr);
                 curl_easy_cleanup(curl);
                 return 1;
             } else if (http_code == 401) {
-                CTOS_LCDTClearDisplay();
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(4, 6, " Wrong PIN");
                 CTOS_KBDGet(&key);
                 CTOS_Delay(3000);
@@ -302,7 +303,7 @@ int account_post(BYTE fname[23], BYTE mname[23], BYTE lname[23], BYTE mobile[11]
                 curl_easy_cleanup(curl);
                 return 0;
             }
-            CTOS_LCDTPrintXY(3, 2, " Failed");
+            CTOS_LCDTPrintXY(3, 6, " Failed");
             CTOS_KBDGet(&key);
             return;
             curl_easy_cleanup(curl);
@@ -330,13 +331,13 @@ void printaccount(void) {
 
     sprintf(baBuf, "Location: Nairobi");
     CTOS_PrinterPutString(baBuf);
-    
+
     sprintf(baBuf, "Brunch: Muindi Mbingu");
     CTOS_PrinterPutString(baBuf);
 
     CTOS_RTCGet(&SetRTC);
-    
-    sprintf(baBuf, "Date: %04d:%02d:%02d:%02d:%02d " ,SetRTC.bYear + 2000, SetRTC.bMonth,SetRTC.bDay,SetRTC.bHour,SetRTC.bMinute );
+
+    sprintf(baBuf, "Date: %04d:%02d:%02d:%02d:%02d ", SetRTC.bYear + 2000, SetRTC.bMonth, SetRTC.bDay, SetRTC.bHour, SetRTC.bMinute);
     CTOS_PrinterPutString(baBuf);
 
     sprintf(baBuf, "Name: %s %s %s ", fname, mname, lname);
@@ -361,7 +362,7 @@ void printaccount(void) {
     CTOS_PrinterPutString("================================");
 
     PrintBlank();
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(3, 6, "Take Customer Receipt");
     CTOS_KBDGet(&key);
 
@@ -370,7 +371,7 @@ void printaccount(void) {
 
 }
 
-void print_agentrcpt(void){
+void print_agentrcpt(void) {
     CTOS_PrinterPutString("=============AGENT==============");
     sprintf(baBuf, "Terminal ID:  8220101400255");
     CTOS_PrinterPutString(baBuf);
@@ -380,13 +381,13 @@ void print_agentrcpt(void){
 
     sprintf(baBuf, "Location: Nairobi");
     CTOS_PrinterPutString(baBuf);
-    
+
     sprintf(baBuf, "Brunch: Muindi Mbingu");
     CTOS_PrinterPutString(baBuf);
 
     CTOS_RTCGet(&SetRTC);
-    
-    sprintf(baBuf, "Date: %04d:%02d:%02d:%02d:%02d " ,SetRTC.bYear + 2000, SetRTC.bMonth,SetRTC.bDay,SetRTC.bHour,SetRTC.bMinute );
+
+    sprintf(baBuf, "Date: %04d:%02d:%02d:%02d:%02d ", SetRTC.bYear + 2000, SetRTC.bMonth, SetRTC.bDay, SetRTC.bHour, SetRTC.bMinute);
     CTOS_PrinterPutString(baBuf);
 
     sprintf(baBuf, "Name: %s %s %s ", fname, mname, lname);
@@ -400,11 +401,11 @@ void print_agentrcpt(void){
 
     sprintf(baBuf, "AccType: %s", accounttype);
     CTOS_PrinterPutString(baBuf);
-    
+
     CTOS_PrinterPutString("================================");
 
     PrintBlank();
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(3, 6, "Take Agent Receipt");
     CTOS_KBDGet(&key);
 }
