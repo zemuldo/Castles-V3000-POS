@@ -108,6 +108,7 @@ void tryloginadmin(void) {
         CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, tempusername, 13);
         CTOS_LCDTPrintXY(4, 7, "Enter Admin Password");
         CTOS_UIKeypad(4, 8, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
+        CTOS_LCDTPrintXY(2, 4, "Logging in....");
         {
             cJSON *root, *fmt, *img, *thm, *fld;
             int i; /* declare a few. */
@@ -119,11 +120,11 @@ void tryloginadmin(void) {
             cJSON_AddItemToObject(root, "username", cJSON_CreateString(tempusername));
             cJSON_AddItemToObject(root, "password", cJSON_CreateString(temppassword));
 
-
+            
             jsonout = cJSON_Print(root);
             cJSON_Delete(root); /*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
 
-
+            
             CURL *curl;
             CURLcode res;
             ClearScreen(4, 26);
@@ -161,7 +162,6 @@ void tryloginadmin(void) {
                     cJSON * root = cJSON_Parse(s2.ptr);
                     token = 1;
                     free(s2.ptr);
-                    curl_easy_cleanup(curl);
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Login Successful");
                     CTOS_Delay(1000);
@@ -466,10 +466,11 @@ void loginwithpin(void) {
 
 void agent_menu() {
     //National ID
-
+    token = 1;
+    loggin[1] = '1';
     CTOS_PowerAutoModeEnable();
     CTOS_LCDTClearDisplay();
-    ShowTitle("AGENCY BANKING DEMO                ");
+    ShowTitle("AGENT  MENU                ");
     CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
     CTOS_LCDTPrintXY(3, 6, "2. Sleep");
     CTOS_LCDTPrintXY(3, 7, "3. Shutdown");
@@ -495,16 +496,18 @@ void agent_menu() {
             break;
 
         case d_KBD_CANCEL:
-            exit(0);
+            return;
     }
 
 
 }
 
 void admin_menu() {
+    token = 1;
+    loggin[1] = '1';
     CTOS_PowerAutoModeEnable();
     CTOS_LCDTClearDisplay();
-    ShowTitle("AGENCY BANKING DEMO                ");
+    ShowTitle("ADMINISTRATOR MENU                ");
     CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
     CTOS_LCDTPrintXY(3, 6, "2. Create Users");
     CTOS_LCDTPrintXY(3, 7, "3. Manage User");
@@ -542,7 +545,7 @@ void admin_menu() {
             break;
 
         case d_KBD_CANCEL:
-            exit(0);
+            select_id();
     }
 
 
@@ -555,7 +558,7 @@ int main(int argc, char *argv[]) {
     loggin[1] = '0';
     select_id();
 
-    exit(0);
+    return;;
 }
 
 

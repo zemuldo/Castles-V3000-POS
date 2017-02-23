@@ -554,10 +554,3 @@ void transact(void) {
     EMVCL_StopIdleLEDBehavior(NULL);
     EMVCL_SetLED(0x0F, 0x08);
 }
-
-void cardlessdeposit(void) {
-    do_transact();
-
-    return;
-}
-

@@ -370,12 +370,13 @@ int cardles_curlpostmain(BYTE cdepg_baInputAmt[5], BYTE cdepositaccnt[15],BYTE c
         int i; /* declare a few. */
 
 
-
+        //g_baInputAmt,depositaccnt,mpin,mcardvendor, mcardnumber, mexpdate
         //build json object-string
         root = cJSON_CreateObject();
         cJSON_AddItemToObject(root, "username", cJSON_CreateString("familypos"));
         cJSON_AddItemToObject(root, "password", cJSON_CreateString("password"));
         cJSON_AddItemToObject(root, "amount", cJSON_CreateString(cdepg_baInputAmt));
+        cJSON_AddItemToObject(root, "accountnumber", cJSON_CreateString(cdepositaccnt));
         cJSON_AddItemToObject(root, "merchantPin", cJSON_CreateString(cdmpin));
         cJSON_AddItemToObject(root, "receipientAccNo", cJSON_CreateString(cdepositaccnt));
         cJSON_AddItemToObject(root, "merchantCardNo", cJSON_CreateString(cdmcardnumber));
@@ -907,6 +908,94 @@ int paybill_post(BYTE pin[4],BYTE tmamount[20], BYTE recipientcardtype[255], BYT
 
 }
 
+int crdlessl_erevenue_post(BYTE tmamount[20], BYTE accountNo[15],BYTE tmpaybill[9],BYTE tmcountycode[9]) {
+
+    BYTE key;
+    BYTE sBuf[128];
+    int accntvalidation = 0;
+    {
+        cJSON *root, *fmt, *img, *thm, *fld;
+        int i; /* declare a few. */
+
+
+        //api_username, api_password, cardNumber, cardPin, CardCVV, CardExpiryDate
+        //build json object-string
+        root = cJSON_CreateObject();
+        cJSON_AddItemToObject(root, "username", cJSON_CreateString("familypos"));
+        cJSON_AddItemToObject(root, "password", cJSON_CreateString("password"));
+        cJSON_AddItemToObject(root, "accountNumber", cJSON_CreateString(accountNo));
+        cJSON_AddItemToObject(root, "countyCode", cJSON_CreateString(tmcountycode));
+        cJSON_AddItemToObject(root, "revenueCode", cJSON_CreateString(tmpaybill));
+        cJSON_AddItemToObject(root, "amount", cJSON_CreateString(tmamount));
+
+        jsonout = cJSON_Print(root);
+        cJSON_Delete(root); /*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
+
+
+        CURL *curl;
+        CURLcode res;
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(3, 5, "Sending........");
+
+        curl = curl_easy_init();
+        if (curl) {
+            struct string1 p;
+            init_string1(&p);
+
+            curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/revenueCollectionCardless");
+            struct curl_slist *headers = NULL;
+            headers = curl_slist_append(headers, "Accept: application/json");
+            headers = curl_slist_append(headers, "Content-Type: application/json");
+            headers = curl_slist_append(headers, "charsets: utf-8");
+            /* example.com is redirected, so we tell libcurl to follow redirection */
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc1);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &p);
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+            /* Perform the request, res will get the return code */
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonout);
+            res = curl_easy_perform(curl);
+
+            //parse json object;
+
+
+            long http_code = 0;
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+            if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
+                ClearScreen(4, 26);
+                char *jsonresponse;
+                jsonresponse = malloc(sizeof (char) * strlen(p.ptr));
+                strcpy(jsonresponse, p.ptr);
+                account_doit(jsonresponse);
+                cJSON * root = cJSON_Parse(p.ptr);
+                message = cJSON_GetObjectItem(root, "message")->valuestring;
+                CTOS_LCDTPrintXY(3, 7, message);
+                CTOS_KBDGet(&key);
+                accntvalidation = 1;
+                free(p.ptr);
+                curl_easy_cleanup(curl);
+                return 1;
+            } else if (http_code == 401) {
+                ClearScreen(4, 26);
+                CTOS_LCDTPrintXY(4, 6, " Wrong PIN");
+                CTOS_KBDGet(&key);
+                CTOS_Delay(3000);
+                accntvalidation = 0;
+                curl_easy_cleanup(curl);
+                return 0;
+            }
+            CTOS_LCDTPrintXY(3, 6, " Failed");
+            CTOS_KBDGet(&key);
+            return;
+            curl_easy_cleanup(curl);
+        }
+
+    }
+
+
+}
+
 
 int utility_post(BYTE pin[4],BYTE tmamount[20], BYTE recipientcardtype[255], BYTE receipentcardno[17], BYTE recipientCardexpiry_date[6],BYTE tmputilityNo[9],BYTE tmputilservice[10],BYTE tmutilCode[10]) {
 
@@ -999,6 +1088,97 @@ int utility_post(BYTE pin[4],BYTE tmamount[20], BYTE recipientcardtype[255], BYT
 
 
 }
+
+int cardles_utility_post(BYTE tmamount[20],BYTE accountNo[15],BYTE tmputilityNo[9],BYTE tmputilservice[10],BYTE tmutilCode[10]) {
+
+    BYTE key;
+    BYTE sBuf[128];
+    int accntvalidation = 0;
+    {
+        cJSON *root, *fmt, *img, *thm, *fld;
+        int i; /* declare a few. */
+
+
+        //cardNumber, cardPin, CardCVV, CardExpiryDate, utilityCode, utilityService, amount, utilityNumber
+        //build json object-string
+        root = cJSON_CreateObject();
+         cJSON_AddItemToObject(root, "username", cJSON_CreateString("familypos"));
+        cJSON_AddItemToObject(root, "password", cJSON_CreateString("password"));
+        cJSON_AddItemToObject(root, "accountNumber ", cJSON_CreateString(accountNo));
+        cJSON_AddItemToObject(root, "utilityCode", cJSON_CreateString(tmutilCode));
+        cJSON_AddItemToObject(root, "utilityService", cJSON_CreateString(tmputilservice));
+        cJSON_AddItemToObject(root, "utilityNumber", cJSON_CreateString(tmputilityNo));
+        cJSON_AddItemToObject(root, "amount", cJSON_CreateString(tmamount));
+
+        jsonout = cJSON_Print(root);
+        cJSON_Delete(root); /*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
+
+
+        CURL *curl;
+        CURLcode res;
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(3, 5, "Sending........");
+
+        curl = curl_easy_init();
+        if (curl) {
+            struct string1 p;
+            init_string1(&p);
+
+            curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/utilityPaymentCardless");
+            struct curl_slist *headers = NULL;
+            headers = curl_slist_append(headers, "Accept: application/json");
+            headers = curl_slist_append(headers, "Content-Type: application/json");
+            headers = curl_slist_append(headers, "charsets: utf-8");
+            /* example.com is redirected, so we tell libcurl to follow redirection */
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc1);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &p);
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+            /* Perform the request, res will get the return code */
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonout);
+            res = curl_easy_perform(curl);
+
+            //parse json object;
+
+
+            long http_code = 0;
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+            if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
+                ClearScreen(4, 26);
+                char *jsonresponse;
+                jsonresponse = malloc(sizeof (char) * strlen(p.ptr));
+                strcpy(jsonresponse, p.ptr);
+                account_doit(jsonresponse);
+                cJSON * root = cJSON_Parse(p.ptr);
+                message = cJSON_GetObjectItem(root, "message")->valuestring;
+                CTOS_LCDTPrintXY(3, 7, message);
+                CTOS_KBDGet(&key);
+                accntvalidation = 1;
+                free(p.ptr);
+                curl_easy_cleanup(curl);
+                return 1;
+            } else if (http_code == 401) {
+                ClearScreen(4, 26);
+                CTOS_LCDTPrintXY(4, 6, " Wrong PIN");
+                CTOS_KBDGet(&key);
+                CTOS_Delay(3000);
+                accntvalidation = 0;
+                curl_easy_cleanup(curl);
+                return 0;
+            }
+            CTOS_LCDTPrintXY(3, 6, " Failed");
+            CTOS_KBDGet(&key);
+            return;
+            curl_easy_cleanup(curl);
+        }
+
+    }
+
+
+}
+
+
 
 
 

@@ -48,7 +48,7 @@
 
 
 BYTE bType;
-
+CTOS_RTC SetRTC;
 ULONG ulRtn;
 USHORT usTxResult;
 char baInput[20];
@@ -70,6 +70,7 @@ BYTE cardtype[255];
 BYTE cardnumber[17];
 BYTE cardvendor[255];
 BYTE pin[4];
+BYTE clienrrev_account[15];
 
 BYTE mcvv[3];
 BYTE mexpdate[6];
@@ -118,6 +119,66 @@ BYTE countycode[9];
 /** 
 ** The main entry of the terminal application 
 **/
+void cardles_payprintreceipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature,ULONG ulValue) {
+    //------------------------------------------------------
+    //PrintBlank();
+    
+    //Terminal ID
+    sprintf(baBuf, "Terminal ID :  01401493");
+    CTOS_PrinterPutString(baBuf);
+    //Store ID
+    sprintf(baBuf, "TransactionI:  8220101400255");
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString("================================");
+    
+    //Type
+    sprintf(baBuf, "Type :  Revenue Collection");
+    CTOS_PrinterPutString(baBuf);
+    
+    
+    
+    sprintf(baBuf, "Revenue code : %s ", paybillnum);
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+    
+    sprintf(baBuf, "County code : %s", countycode);
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+    
+
+    //Trans Type
+    CTOS_PrinterPutString("Trans Type : Revenue Collection");
+    CTOS_PrinterPutString(" ");
+
+    sprintf(baBuf, "Date: %04d:%02d:%02d:%02d:%02d ", SetRTC.bYear + 2000, SetRTC.bMonth, SetRTC.bDay, SetRTC.bHour, SetRTC.bMinute);
+    CTOS_PrinterPutString(baBuf);
+
+    sprintf(baBuf, "Auth Code  : TT2738");
+    CTOS_PrinterPutString(baBuf);
+    CTOS_PrinterPutString(" ");
+
+    //Batch No
+    iBatchNo++;
+    sprintf(baBuf, "Batch No   : %06d", iBatchNo);
+    CTOS_PrinterPutString(baBuf);
+
+    CTOS_PrinterPutString(" ");
+
+    // AMOUNT
+    sprintf(baBuf, "     Amount: KSH: %ld", ulValue);
+    CTOS_PrinterPutString(baBuf);
+    if (isNeedSignature) {
+        sprintf(baBuf, "Signature  ");
+        CTOS_PrinterPutString(baBuf);
+        PrintBlank();
+    }
+
+    CTOS_PrinterPutString("================================");
+
+    PrintBlank();
+
+}
 
 void payprintreceipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature,ULONG ulValue) {
     //------------------------------------------------------
@@ -271,7 +332,7 @@ void payprintreceipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature,ULONG ulValue)
     CTOS_PrinterPutString(" ");
 
     // AMOUNT
-    sprintf(baBuf, "     Ballance: KSH: %ld", ulValue);
+    sprintf(baBuf, "     Amount: KSH: %ld", ulValue);
     CTOS_PrinterPutString(baBuf);
     if (isNeedSignature) {
         sprintf(baBuf, "Signature  ");
@@ -362,6 +423,7 @@ void paydo_transact(BYTE bType) {
     if (key == d_KBD_ENTER) {
         ClearScreen(4, 26);
         CTOS_LCDTPrintXY(2, 4, d_MSG_PRESENT_CARD);
+        EMVCL_ShowContactlessSymbol(NULL);
     }//Amount not OK, go back to re-enter
     else {
         return;
@@ -629,12 +691,123 @@ void paydo_transact(BYTE bType) {
     getcarddata(&stRCDataEx);
 
     //send request
-    paybill_post(pin, g_baInputAmt,cardvendor, cardnumber, expdate, paybillnum,countycode);
+    paybill_post(pin, g_baInputAmt, cardvendor, cardnumber, expdate, paybillnum, countycode);
     usTxResult = stRCDataAnalyze.usTransResult;
 
 
 
     payprintreceipt(&stRCDataEx, NeedSignature, g_ulAmt);
+    if (NeedSignature) {
+        bStatus = SignatureProcessing();
+        if (bStatus != 0) {
+            //usTxResult = d_EMVCL_OUTCOME_DECLINED;
+        }
+    }
+
+
+    return;
+}
+
+void cardlessr_rev(BYTE bType) {
+    BYTE bKey;
+    BYTE NeedSignature;
+    BYTE temp[20];
+    BYTE baAmount[32];
+    BYTE upload_tx_buf[1024];
+    USHORT upload_tx_len;
+    BYTE pin[20];
+    BYTE pin_len;
+    ULONG ulAPRtn;
+    BYTE *msg;
+    BYTE *CVMStr;
+    BYTE TransaRelatedData[100];
+    BYTE lenn;
+    ULONG ulValue;
+    BYTE bStatus;
+    USHORT usTk1Len, usTk2Len, usTk3Len; //Track 1,2,3 length //
+    BYTE baTk1Buf[128], baTk2Buf[128], baTk3Buf[128]; //Track 1,2,3 data buffer //
+    USHORT rtn;
+    BOOL isContactlessInterfaceSupport;
+    BOOL isContactInterfaceSupport;
+    BOOL isMastripeInterfaceSupport;
+    BYTE key;
+
+
+
+
+    DebugAddINT("               ", 0);
+    DebugAddINT("               ", 0);
+
+
+    // amount - ascii to int
+    g_ulAmt = ASCII2Int(g_baInputAmt, g_usAmtLen);
+    g_ulCBAmt = ASCII2Int(g_baInputCBAmt, g_usCBAmtLen);
+    g_ulAmt += g_ulCBAmt;
+
+    //Confirm Transaction
+    ShowTitle("  Revenue Collection          ");
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(2, 4, "Please Confirm");
+    CTOS_LCDTPrintXY(2, 6, "   Deposit");
+    sprintf(temp, "   KSH %ld", g_ulAmt);
+    memset(baAmount, 0x00, sizeof (baAmount));
+    memcpy(baAmount, temp, strlen(temp));
+    CTOS_LCDTPrintXY(2, 8, baAmount);
+
+    CTOS_LCDTPrintXY(1, 10, " OK TO CONFIRM");
+    CTOS_LCDTPrintXY(1, 12, " X TO CANCEL");
+
+    CTOS_KBDGet(&key);
+    if (key == d_KBD_ENTER) {
+        ClearScreen(4, 26);
+    } else {
+        return;
+    }
+
+
+    STR * keyboardLayoutNumberWithRadixPoint[] = {"0", "1", "2", "3", "4", "5", "6", "7",
+        "8", "9", "", "."};
+    STR * keyboardLayoutEnglish[] = {" 0", "qzQZ1", "abcABC2", "defDEF3", "ghiGHI4",
+        "jklJKL5", "mnoMNO6", "prsPRS7", "tuvTUV8", "wxyWXY9", ":;/\\|?,.<>", ".!@#$%^&*()"};
+    STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
+        ""};
+    BYTE baBuff[256];
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(2, 5, "Enter Revenue Code:");
+    CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, paybillnum,
+            8);
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(2, 5, "Enter County Code:");
+    CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, countycode,
+            8);
+    //Get the account Number
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(2, 5, "Enter Account NO:");
+    CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, clienrrev_account, 15);
+    //confirm Account Number
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(3, 5, "Please Confirm");
+    CTOS_LCDTPrintXY(3, 6, "Deposit KSH:  ");
+    CTOS_LCDTPrintXY(14, 6, baAmount);
+    CTOS_LCDTPrintXY(3, 7, "To Account Number:");
+    CTOS_LCDTPrintXY(3, 8, clienrrev_account);
+    //Pressing okay-Accepting accnt Pressing X returns
+    CTOS_LCDTPrintXY(3, 10, " OK TO CONFIRM");
+    CTOS_LCDTPrintXY(3, 11, " X TO CANCEL");
+    CTOS_KBDGet(&key);
+    if (key == d_KBD_ENTER) {
+    } else {
+        return;
+    }
+
+
+
+    crdlessl_erevenue_post(g_baInputAmt, clienrrev_account, paybillnum, countycode);
+    usTxResult = stRCDataAnalyze.usTransResult;
+
+
+
+    cardles_payprintreceipt(&stRCDataEx, NeedSignature, g_ulAmt);
     if (NeedSignature) {
         bStatus = SignatureProcessing();
         if (bStatus != 0) {
@@ -662,25 +835,30 @@ void paytransact(void) {
     if (ulRtn == d_NO) {
         return;
     }
+    ClearScreen(4, 26);
+    ShowTitle("  Utility Payment Method         ");
+    CTOS_LCDTPrintXY(2, 5, "1.Card Payment");
+    CTOS_LCDTPrintXY(2, 6, "2.Cardless Payment");
 
-    //If the mutual authen was ok, start a transaction.
+    CTOS_KBDGet(&key);
 
+    switch (key) {
+        case '1':
+            paydo_transact(d_INIT_TRANS);
+            break;
+        case '2':
+            cardlessr_rev(d_INIT_TRANS);
+            break;
+        case d_KBD_CANCEL:
+            return;
+            break;
 
-    paydo_transact(d_INIT_TRANS);
+    }
+
 
 
     EMVCL_StopIdleLEDBehavior(NULL);
     EMVCL_SetLED(0x0F, 0x08);
-}
-
-void payfee(void) {
-    paytransact();
-    return;
-}
-
-void paybill(void) {
-    paytransact();
-    return;
 }
 
 
