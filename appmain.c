@@ -29,6 +29,10 @@ BYTE temppassword[8];
 BYTE password[8] = {'f', 'a', 'm', 'i', 'l', 'y', 'b', '\0'};
 BYTE passretrycheck[4];
 BYTE loggin[2];
+int token;
+BYTE username[12];
+BYTE bKey;
+
 
 BYTE StandbybMode = d_PWR_STANDBY_MODE;
 BYTE SleepbMode = d_PWR_SLEEP_MODE;
@@ -163,7 +167,6 @@ STR * keyboardLayoutEnglish[] = {" 0", "qzQZ1", "abcABC2", "defDEF3", "ghiGHI4",
 STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
     ""};
 
-
 int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
     int i;
     for (i = 1; i <= n; i++) {
@@ -177,30 +180,82 @@ int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
 }
 
 void loginwithpin(void) {
+    STR * keyboardLayoutEnglish[] = {" 0", "qzQZ1", "abcABC2", "defDEF3", "ghiGHI4",
+        "jklJKL5", "mnoMNO6", "prsPRS7", "tuvTUV8", "wxyWXY9", ":;/\\|?,.<>", ".!@#$%^&*()"};
+    //numeric keyboard (0123456789) and radix point '.'
+    STR * keyboardLayoutNumberWithRadixPoint[] = {"0", "1", "2", "3", "4", "5", "6", "7",
+        "8", "9", "", "."};
+    //numeric keyboard (0123456789) without radix point
+    STR * keyboardLayoutNumber[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "",
+        ""};
     CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
     //setfont displayed on the screen.
     CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
     ClearScreen(4, 26);
-    //Check if session is active
-    if (loggin[1] != '1') {
-        CTOS_LCDTPrintXY(4, 5, "Enter Password");
-        CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
-        if (strcmp(temppassword, password) != 0) {
-            ClearScreen(4, 26);
-            CTOS_LCDTPrintXY(3, 5, "Wrong Password");
-            CTOS_LCDTPrintXY(3, 6, "   !!!!!");
-            CTOS_Delay(1000);
-
-            exit(0);
-        } else {
-            loggin[1] = '1';
-            exit;
-        }
-    } else {
-        exit;
-    }
+    //    //Check if session is active
+    //    if (loggin[1] != '1') {
+    //        CTOS_LCDTPrintXY(4, 5, "Enter Password");
+    //        CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
+    //        if (strcmp(temppassword, password) != 0) {
+    //            ClearScreen(4, 26);
+    //            CTOS_LCDTPrintXY(3, 5, "Wrong Password");
+    //            CTOS_LCDTPrintXY(3, 6, "   !!!!!");
+    //            CTOS_Delay(1000);
+    //
+    //            exit(0);
+    //        } else {
+    //            loggin[1] = '1';
+    //            exit;
+    //        }
+    //    } else {
+    //        exit;
+    //    }
     //National ID
+    
+    CTOS_LCDTPrintXY(4, 4, "Select User ID");
+    CTOS_LCDTPrintXY(4, 5, "1. Admin User");
+    CTOS_LCDTPrintXY(4, 4, "2. Normal User");
+    CTOS_KBDGet(&bKey);
+    
+    if (bKey == d_KBD_1) {
+        //Not in session
+        CTOS_LCDTPrintXY(4, 4, "Enter Admin Username");
 
+        CTOS_UIKeypad(4, 5, keyboardLayoutEnglish, 40, 80, d_FALSE, d_FALSE, 0, 0, username, 13);
+        CTOS_LCDTPrintXY(4, 4, "Enter Admin Password");
+        CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
+        int validator = loginuser(username, temppassword);
+        if (validator == 1) {
+            loggin[1] = '1';
+            afterlogin();
+        } else {
+            loginwithpin();
+        }
+    } else if(bKey == d_KBD_2) {
+
+        CTOS_LCDTPrintXY(4, 4, "Enter Normal Username");
+
+        CTOS_UIKeypad(4, 5, keyboardLayoutEnglish, 40, 80, d_FALSE, d_FALSE, 0, 0, username, 13);
+        CTOS_LCDTPrintXY(4, 4, "Enter Normal Username");
+        CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
+        int validator = loginuser(username, temppassword);
+        if (validator == 1) {
+            loggin[1] = '1';
+            afterlogin();
+        } else {
+            loginwithpin();
+        }
+    } 
+    else if(bKey == d_KBD_CANCEL){exit (0);}
+    else {
+        CTOS_LCDTPrintXY(4, 4, "Invalid User ID");
+        CTOS_Delay(1000);
+        loginwithpin();
+    }
+
+}
+
+void afterlogin(void) {
     CTOS_PowerAutoModeEnable();
     CTOS_LCDTClearDisplay();
     ShowTitle("AGENCY BANKING DEMO                ");
@@ -229,13 +284,18 @@ void loginwithpin(void) {
             break;
 
         case d_KBD_CANCEL:
-            exit(0);
+            exit (0);
     }
 
 
 }
 
+
+
 int main(int argc, char *argv[]) {
+    GSMtest();
+    GPRSOpen();
+    token=0;
     loggin[1] = '0';
     loginwithpin();
 

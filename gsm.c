@@ -240,7 +240,6 @@ void GPRSOpen(void) {
     state = Check_state(ret);
     if (state != TRUE) {
         CTOS_LCDTPrintXY(1, 10, "Open fail    ");
-        CTOS_KBDGet(&key);
         return;
     }
     CTOS_LCDTPrintXY(1, 8, "OPEN  [OK]       ");
@@ -254,7 +253,6 @@ void GPRSOpen(void) {
         sprintf(str, "%02X", baIP_G[i]);
         CTOS_LCDTPrintXY(6 + i * 2, 5, str);
     }
-    CTOS_KBDGet(&key);
     return;
 }
 
