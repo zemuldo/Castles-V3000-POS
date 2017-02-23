@@ -15,7 +15,7 @@ void moremenu(void) {
     while (1) {
         ClearScreen(4, 26);
         ShowTitle("   MAIN MENU  ");
-        CTOS_LCDTPrintXY(2, 5, "1.Card Utility Pay");
+        
         CTOS_LCDTPrintXY(2, 6, "2.User Login");
         CTOS_LCDTPrintXY(2, 7, "3.Reports");
         CTOS_LCDTPrintXY(2, 8, "4.Batch Uploads");

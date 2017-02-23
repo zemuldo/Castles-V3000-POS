@@ -44,7 +44,7 @@ void settings(void) {
                     break;
 
                 case d_KBD_CANCEL:
-                    loginwithpin();
+                    return;
                     break;
 
 
