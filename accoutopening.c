@@ -42,6 +42,7 @@ char *accountname;
 BYTE request_json[255];
 CTOS_RTC SetRTC;
 BYTE key;
+char *jsonresponse;
 
 void create_account(void) {
     BYTE key;
@@ -270,7 +271,7 @@ int account_post(BYTE name1[23], BYTE name2[23], BYTE name3[23], BYTE mobileno[1
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
                 ClearScreen(4, 26);
-                char *jsonresponse;
+                
                 jsonresponse = malloc(sizeof (char) * strlen(s.ptr));
                 strcpy(jsonresponse, s.ptr);
                 account_doit(jsonresponse);
@@ -406,6 +407,9 @@ void print_agentrcpt(void) {
 
     PrintBlank();
     ClearScreen(4, 26);
+    //Log Transaction
     CTOS_LCDTPrintXY(3, 6, "Take Agent Receipt");
     CTOS_KBDGet(&key);
+    sprintf(baBuf, "|| %s || ", jsonresponse);
+    autoFileWrite(jsonresponse);
 }

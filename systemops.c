@@ -161,12 +161,11 @@ void systemopsmain(void) {
                 sysSetLCDContrast();
                 break;
             case d_KBD_6:
-                exit(0);
                 break;
             case d_KBD_CANCEL:
-                settings();
+                return;
+                break;
         }
     }
 
-    return;
 }

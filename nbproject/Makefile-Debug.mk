@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/accoutopening.o \
+	${OBJECTDIR}/fileman.o \
 	${OBJECTDIR}/curlpost.o \
 	${OBJECTDIR}/powerautomode.o \
 	${OBJECTDIR}/withdraw.o \
@@ -47,6 +48,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/appmain.o \
 	${OBJECTDIR}/deposit.o \
 	${OBJECTDIR}/wub_lib.o \
+	${OBJECTDIR}/filemanager.o \
 	${OBJECTDIR}/gsm.o \
 	${OBJECTDIR}/setpin.o \
 	${OBJECTDIR}/systemops.o \
@@ -89,6 +91,10 @@ dist/V3/Debug/FamDemoV1.0.0.exe: ${OBJECTFILES}
 ${OBJECTDIR}/accoutopening.o: accoutopening.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/accoutopening.o accoutopening.c
+
+${OBJECTDIR}/fileman.o: fileman.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/fileman.o fileman.c
 
 ${OBJECTDIR}/curlpost.o: curlpost.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -133,6 +139,10 @@ ${OBJECTDIR}/deposit.o: deposit.c
 ${OBJECTDIR}/wub_lib.o: wub_lib.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/wub_lib.o wub_lib.c
+
+${OBJECTDIR}/filemanager.o: filemanager.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/filemanager.o filemanager.c
 
 ${OBJECTDIR}/gsm.o: gsm.c 
 	${MKDIR} -p ${OBJECTDIR}

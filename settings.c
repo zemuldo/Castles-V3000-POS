@@ -14,16 +14,10 @@
 #include "appmain.h"
 //
 void settings(void) {
+    while (1) {
     BYTE key;
-
-    
-    {
-
-        BYTE key;
         ClearScreen(4, 26);
         ShowTitle("  DEVICE SETTINGS              ");
-        while (1) {
-            
             CTOS_LCDTPrintXY(3, 5, "1. GPRS SIM"); //when clicked it a withdraw
             CTOS_LCDTPrintXY(3, 7, "2. SYSTEM "); //when clicked it a deposit
             CTOS_LCDTPrintXY(1, 13, "             X. Exit");
@@ -52,10 +46,6 @@ void settings(void) {
 
 
         }
-
-
-
-    }
 
 
 }

@@ -40,6 +40,8 @@
       <itemPath>curlpost.c</itemPath>
       <itemPath>debug2.c</itemPath>
       <itemPath>deposit.c</itemPath>
+      <itemPath>fileman.c</itemPath>
+      <itemPath>filemanager.c</itemPath>
       <itemPath>gsm.c</itemPath>
       <itemPath>jsonbulder.c</itemPath>
       <itemPath>mainmenu.c</itemPath>

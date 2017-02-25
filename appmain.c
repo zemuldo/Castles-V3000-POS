@@ -100,15 +100,20 @@ void tryloginadmin(void) {
         ""};
 
     if (loggin[1] == '1' && token == 1) {
+        loggin[1] = '1';
+        token=1;
         admin_menu();
     } else {
         ClearScreen(4, 26);
+        ShowTitle("LOGIN                     ");
         id = 1;
         CTOS_LCDTPrintXY(4, 5, "Enter Admin Username");
         CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, tempusername, 13);
         CTOS_LCDTPrintXY(4, 7, "Enter Admin Password");
         CTOS_UIKeypad(4, 8, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
-        CTOS_LCDTPrintXY(2, 4, "Logging in....");
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(2, 4, "Loging in....");
+        CTOS_Delay(900);
         {
             cJSON *root, *fmt, *img, *thm, *fld;
             int i; /* declare a few. */
@@ -119,7 +124,6 @@ void tryloginadmin(void) {
             root = cJSON_CreateObject();
             cJSON_AddItemToObject(root, "username", cJSON_CreateString(tempusername));
             cJSON_AddItemToObject(root, "password", cJSON_CreateString(temppassword));
-
             
             jsonout = cJSON_Print(root);
             cJSON_Delete(root); /*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
@@ -154,32 +158,28 @@ void tryloginadmin(void) {
                 long http_code = 0;
                 curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
                 if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
-                    ClearScreen(4, 26);
-                    char *jsonresponse;
-                    jsonresponse = malloc(sizeof (char) * strlen(s2.ptr));
-                    strcpy(jsonresponse, s2.ptr);
-                    account_doit(jsonresponse);
-                    cJSON * root = cJSON_Parse(s2.ptr);
                     token = 1;
-                    free(s2.ptr);
+                    loggin[1] = '1';
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Login Successful");
-                    CTOS_Delay(1000);
+                    CTOS_Delay(900);
                     admin_menu();
                 } else if (http_code == 401) {
                     token = 0;
+                    loggin[1] = '0';
                     curl_easy_cleanup(curl);
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Invalid Details");
-                    CTOS_Delay(1000);
-                    return;
+                    CTOS_Delay(900);
+                    select_id();
                 } else {
                     token = 0;
+                    loggin[1] = '0';
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Login Failed");
-                    CTOS_Delay(1000);
+                    CTOS_Delay(900);
                     curl_easy_cleanup(curl);
-                    return;
+                    select_id();
                 }
             }
 
@@ -205,14 +205,20 @@ void trylogin_cashier(void) {
         ""};
 
     if (loggin[1] == '1' && token == 1) {
+        loggin[1] = '1';
+        token=1;
         agent_menu();
     } else {
         ClearScreen(4, 26);
+        ShowTitle("LOGIN                     ");
         id = 1;
         CTOS_LCDTPrintXY(4, 5, "Enter Cashier Username");
         CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, tempusername, 13);
         CTOS_LCDTPrintXY(4, 7, "Enter Cashier Password");
         CTOS_UIKeypad(4, 8, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(2, 4, "Loging in....");
+        CTOS_Delay(900);
         {
             cJSON *root, *fmt, *img, *thm, *fld;
             int i; /* declare a few. */
@@ -259,32 +265,29 @@ void trylogin_cashier(void) {
                 curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
                 if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
                     ClearScreen(4, 26);
-                    char *jsonresponse;
-                    jsonresponse = malloc(sizeof (char) * strlen(s2.ptr));
-                    strcpy(jsonresponse, s2.ptr);
-                    account_doit(jsonresponse);
-                    cJSON * root = cJSON_Parse(s2.ptr);
                     token = 1;
-                    free(s2.ptr);
+                    loggin[1] = '1';
                     curl_easy_cleanup(curl);
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Login Successful");
-                    CTOS_Delay(1000);
+                    CTOS_Delay(900);
                     agent_menu();
                 } else if (http_code == 401) {
                     token = 0;
+                    loggin[1] = '0';
                     curl_easy_cleanup(curl);
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Invalid Details");
-                    CTOS_Delay(1000);
-                    return;
+                    CTOS_Delay(900);
+                    select_id();
                 } else {
                     token = 0;
+                    loggin[1] = '0';
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Login Failed");
-                    CTOS_Delay(1000);
+                    CTOS_Delay(900);
                     curl_easy_cleanup(curl);
-                    return;
+                    select_id();
                 }
             }
 
@@ -330,9 +333,7 @@ void agency_menu(void) {
     CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
     EMVCL_ShowVirtualLED(NULL);
     EMVCL_SetLED(0x0F, 0x08);
-
-    while (1) {
-
+ while (1) {
         ClearScreen(4, 26);
         ShowTitle("   AGENT MENU           ");
         CTOS_LCDTPrintXY(2, 5, "1.A/C Opening");
@@ -425,28 +426,38 @@ int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
 
 void select_id(void) {
     BYTE key;
-    token = 0;
+     while (1) {
     CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
     //setfont displayed on the screen.
     CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
     ClearScreen(4, 26);
-    CTOS_LCDTPrintXY(4, 4, "Select User ID");
-    CTOS_LCDTPrintXY(4, 5, "1. Admin User");
-    CTOS_LCDTPrintXY(4, 6, "2. Cashier User");
+    ShowTitle("LOGIN                            ");
+    CTOS_LCDTPrintXY(4, 5, "Select User ID");
+    CTOS_LCDTPrintXY(4, 6, "1. Admin User");
+    CTOS_LCDTPrintXY(4, 7, "2. Cashier User");
     CTOS_KBDGet(&key);
     //login admin
     if (key == d_KBD_1) {
         tryloginadmin();
+        break;
     }//login Cashier
     else if (key == d_KBD_2) {
         trylogin_cashier();
-    } else if (key == d_KBD_CANCEL) {
+        break;
+    } 
+    else if (key == d_KBD_CANCEL) {
         exit(0);
+        break;
     } else {
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(3, 4, "Invalid ID");
+        CTOS_Delay(900);
+        select_id();
+        break;
     }
 
 }
-
+}
 void loginwithpin(void) {
 
     if (key == d_KBD_1) {
@@ -466,6 +477,7 @@ void loginwithpin(void) {
 
 void agent_menu() {
     //National ID
+    while (1) {
     token = 1;
     loggin[1] = '1';
     CTOS_PowerAutoModeEnable();
@@ -476,7 +488,7 @@ void agent_menu() {
     CTOS_LCDTPrintXY(3, 7, "3. Shutdown");
     CTOS_LCDTPrintXY(3, 8, "4. Restart");
     CTOS_LCDTPrintXY(3, 9, "5. Settings");
-    CTOS_LCDTPrintXY(1, 15, "              X-Exit");
+    CTOS_LCDTPrintXY(1, 15, "              X-Logout");
     CTOS_KBDGet(&key);
     switch (key) {
         case d_KBD_1:
@@ -496,13 +508,16 @@ void agent_menu() {
             break;
 
         case d_KBD_CANCEL:
-            return;
+            token = 0;
+            loggin[1] = '0';
+            select_id();
     }
 
 
 }
-
+}
 void admin_menu() {
+     while (1) {
     token = 1;
     loggin[1] = '1';
     CTOS_PowerAutoModeEnable();
@@ -516,49 +531,48 @@ void admin_menu() {
     CTOS_LCDTPrintXY(3, 10, "6. Repair Coms");
     CTOS_LCDTPrintXY(3, 11, "7. Conn Status");
     CTOS_LCDTPrintXY(3, 12, "8. Settings");
-    CTOS_LCDTPrintXY(1, 15, "              X-Exit");
+    CTOS_LCDTPrintXY(1, 15, "              X-Logout");
     CTOS_KBDGet(&key);
     switch (key) {
         case d_KBD_1:
             agency_menu();
             break;
         case d_KBD_2:
-            return;
             break;
         case d_KBD_3:
-            return;
             break;
         case d_KBD_4:
-            return;
+            filemanager();
             break;
         case d_KBD_5:
-            return;
+            filemanager();
             break;
         case d_KBD_6:
-            return;
             break;
         case d_KBD_7:
-            return;
             break;
         case d_KBD_8:
             settings();
             break;
 
         case d_KBD_CANCEL:
+            token = 0;
+            loggin[1] = '0';
             select_id();
     }
 
-
+     }
 }
 
 int main(int argc, char *argv[]) {
+    
     GSMtest();
     GPRSOpen();
     token = 0;
     loggin[1] = '0';
     select_id();
 
-    return;;
+    exit(0);
 }
 
 
