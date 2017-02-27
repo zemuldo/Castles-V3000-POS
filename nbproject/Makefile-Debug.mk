@@ -35,9 +35,12 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/accoutopening.o \
+	${OBJECTDIR}/fileman.o \
 	${OBJECTDIR}/curlpost.o \
 	${OBJECTDIR}/powerautomode.o \
 	${OBJECTDIR}/withdraw.o \
+	${OBJECTDIR}/balance.o \
 	${OBJECTDIR}/paywith.o \
 	${OBJECTDIR}/cJSON.o \
 	${OBJECTDIR}/cardlessdeposit.o \
@@ -46,14 +49,17 @@ OBJECTFILES= \
 	${OBJECTDIR}/deposit.o \
 	${OBJECTDIR}/wub_lib.o \
 	${OBJECTDIR}/gsm.o \
-	${OBJECTDIR}/ballance.o \
+	${OBJECTDIR}/filemanager.o \
+	${OBJECTDIR}/setpin.o \
 	${OBJECTDIR}/systemops.o \
+	${OBJECTDIR}/ministatement.o \
+	${OBJECTDIR}/utilitypay.o \
+	${OBJECTDIR}/agentballance.o \
 	${OBJECTDIR}/ussd.o \
 	${OBJECTDIR}/moremenu.o \
 	${OBJECTDIR}/debug2.o \
 	${OBJECTDIR}/Setting.o \
 	${OBJECTDIR}/jsonbulder.o \
-	${OBJECTDIR}/cardless_curlpost.o \
 	${OBJECTDIR}/Transaction.o \
 	${OBJECTDIR}/mainmenu.o
 
@@ -82,6 +88,14 @@ dist/V3/Debug/FamDemoV1.0.0.exe: ${OBJECTFILES}
 	${MKDIR} -p dist/V3/Debug
 	arm-brcm-linux-gnueabi-g++ -L . "-L${SDKV3LIB}" "-L${SDKV3LIBN}" -o dist/V3/Debug/FamDemoV1.0.0  ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
+${OBJECTDIR}/accoutopening.o: accoutopening.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/accoutopening.o accoutopening.c
+
+${OBJECTDIR}/fileman.o: fileman.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/fileman.o fileman.c
+
 ${OBJECTDIR}/curlpost.o: curlpost.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/curlpost.o curlpost.c
@@ -93,6 +107,10 @@ ${OBJECTDIR}/powerautomode.o: powerautomode.c
 ${OBJECTDIR}/withdraw.o: withdraw.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/withdraw.o withdraw.c
+
+${OBJECTDIR}/balance.o: balance.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/balance.o balance.c
 
 ${OBJECTDIR}/paywith.o: paywith.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -126,13 +144,29 @@ ${OBJECTDIR}/gsm.o: gsm.c
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/gsm.o gsm.c
 
-${OBJECTDIR}/ballance.o: ballance.c 
+${OBJECTDIR}/filemanager.o: filemanager.c 
 	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/ballance.o ballance.c
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/filemanager.o filemanager.c
+
+${OBJECTDIR}/setpin.o: setpin.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/setpin.o setpin.c
 
 ${OBJECTDIR}/systemops.o: systemops.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/systemops.o systemops.c
+
+${OBJECTDIR}/ministatement.o: ministatement.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/ministatement.o ministatement.c
+
+${OBJECTDIR}/utilitypay.o: utilitypay.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/utilitypay.o utilitypay.c
+
+${OBJECTDIR}/agentballance.o: agentballance.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/agentballance.o agentballance.c
 
 ${OBJECTDIR}/ussd.o: ussd.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -153,10 +187,6 @@ ${OBJECTDIR}/Setting.o: Setting.c
 ${OBJECTDIR}/jsonbulder.o: jsonbulder.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/jsonbulder.o jsonbulder.c
-
-${OBJECTDIR}/cardless_curlpost.o: cardless_curlpost.c 
-	${MKDIR} -p ${OBJECTDIR}
-	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/cardless_curlpost.o cardless_curlpost.c
 
 ${OBJECTDIR}/Transaction.o: Transaction.c 
 	${MKDIR} -p ${OBJECTDIR}

@@ -45,7 +45,7 @@ void Tag(void)
 	
 	while(1)
 	{
-		ClearScreen(4, 14);
+		ClearScreen(4, 26);
 		ShowTitle("       Tag     ");
 		
 		CTOS_LCDTPrintXY(1, 4, "1.Set TagSetting");
@@ -73,7 +73,7 @@ next:
 			
 			if(rtn != 0)
 			{
-				ClearScreen(4, 14);
+				ClearScreen(4, 26);
 				ShowRtn(4, "Set Tag Fail    ", rtn);
 				CTOS_KBDGet(&bKey);
 			}
@@ -84,7 +84,7 @@ next:
 			DebugAddINT("Set TagSetting(Cash) Rtn", rtn);
 			if(rtn != 0)
 			{
-				ClearScreen(4, 14);
+				ClearScreen(4, 26);
 				ShowRtn(4, "Set Tag Fail    ", rtn);
 				CTOS_KBDGet(&bKey);
 			}
@@ -95,7 +95,7 @@ next:
 			DebugAddINT("Set TagSetting(Cashback) Rtn", rtn);
 			if(rtn != 0)
 			{
-				ClearScreen(4, 14);
+				ClearScreen(4, 26);
 				ShowRtn(4, "Set Tag Fail    ", rtn);
 				CTOS_KBDGet(&bKey);
 			}
@@ -106,12 +106,12 @@ next:
 			DebugAddINT("Set TagSetting(Refund) Rtn", rtn);
 			if(rtn != 0)
 			{
-				ClearScreen(4, 14);
+				ClearScreen(4, 26);
 				ShowRtn(4, "Set Tag Fail    ", rtn);
 				CTOS_KBDGet(&bKey);
 			}
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			ShowRtn(4, "Set Tag OK      ", rtn);
 			CTOS_KBDGet(&bKey);
 		}
@@ -126,7 +126,7 @@ next:
 					
 			rtn = EMVCL_AIDGetTagData(&stGetTagData);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Get Tag Fail    ", rtn);
@@ -150,7 +150,7 @@ next:
 			rtn = EMVCL_AIDSetTagData(0x01, &stTagData);
 			DebugAddINT("Del TagSetting(purchase) Rtn", rtn);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Del Tag Fail    ", rtn);
@@ -168,7 +168,7 @@ next:
 			rtn = EMVCL_AIDSetTagData(0x02, &stTagData);
 			DebugAddINT("Del All TagSetting Rtn", rtn);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Del All Tag Fail    ", rtn);
@@ -360,7 +360,7 @@ void CAPK(void)
 	
 	while(1)
 	{
-		ClearScreen(4, 14);
+		ClearScreen(4, 26);
 		ShowTitle("       CAPK       ");
 		
 		CTOS_LCDTPrintXY(1, 4, "1.Set CAPK   ");
@@ -377,7 +377,7 @@ next:
 			rtn = SetCAPK();
 			DebugAddINT("Set CAPK Rtn", rtn);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Set CAPK Fail   ", rtn);
@@ -395,7 +395,7 @@ next:
 			rtn = EMVCL_GetCAPK(d_CAPK_RID, d_CAPK_INDEX_1, &stCAPubKey);
 			DebugAddINT("EMVCL_GetCAPK Rtn", rtn);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Get CAPK Fail   ", rtn);
@@ -414,7 +414,7 @@ next:
 			rtn = DelCAPK();
 			DebugAddINT("DelCAPK Rtn", rtn);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Del CAPK Fail   ", rtn);
@@ -431,7 +431,7 @@ next:
 			rtn = ReaseAllCAPK();
 			DebugAddINT("ReaseAllCAPK Rtn", rtn);
 			
-			ClearScreen(4, 14);
+			ClearScreen(4, 26);
 			if(rtn != 0)
 			{
 				ShowRtn(4, "Erase CAPK Fail ", rtn);	
@@ -469,7 +469,7 @@ void UIType(void)
 	
 	while(1)
 	{
-		ClearScreen(4, 14);
+		ClearScreen(4, 26);
 		ShowTitle("       UI Type       ");
 		
 		CTOS_LCDTPrintXY(1, 4, "1.Set Normal UI ");
@@ -524,7 +524,7 @@ void Do_Setting(void)
     
 	while(1)
 	{
-		ClearScreen(4, 14);
+		ClearScreen(4, 26);
 		ShowTitle("      Setting     ");
 		
 		CTOS_LCDTPrintXY(1, 4, "1. Tag          ");

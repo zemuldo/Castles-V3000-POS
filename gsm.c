@@ -73,7 +73,7 @@ void GSMtest(void) {
     BYTE sBuf[128];
     BYTE State;
     BYTE bID;
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 4, "Select SIM");
 
     CTOS_LCDTPrintXY(1, 5, "1. SIM1         ");
@@ -230,7 +230,7 @@ void GPRSOpen(void) {
     CTOS_TCP_GPRSInit();
 
     // GPRSOpen //
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 4, "OPENING...         ");
     strcpy(strAPN, "internet");
     strcpy(baID, "yahoo");
@@ -240,7 +240,6 @@ void GPRSOpen(void) {
     state = Check_state(ret);
     if (state != TRUE) {
         CTOS_LCDTPrintXY(1, 10, "Open fail    ");
-        CTOS_KBDGet(&key);
         return;
     }
     CTOS_LCDTPrintXY(1, 8, "OPEN  [OK]       ");
@@ -254,13 +253,12 @@ void GPRSOpen(void) {
         sprintf(str, "%02X", baIP_G[i]);
         CTOS_LCDTPrintXY(6 + i * 2, 5, str);
     }
-    CTOS_KBDGet(&key);
     return;
 }
 
 void GPRSConnect(void) {
     // GPRSConnect //
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, "Connecting...      ");
     sprintf(str, "%d.%d.%d.%d\n%d", baIP_R[0], baIP_R[1], baIP_R[2], baIP_R[3], usPort);
     CTOS_LCDTPrintXY(1, 8, str);
@@ -277,7 +275,7 @@ void GPRSConnect(void) {
 }
 
 void GPRSTxRx(void) {
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, "Sending...    ");
     //ret = CTOS_TCP_GPRSTx(bSocket, "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A", 0x0A);
     ret = CTOS_TCP_GPRSTx(bSocket, "\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3A", 0x64);
@@ -327,7 +325,7 @@ void GPRSTxRx(void) {
 }
 
 void GPRSDisconnect(void) {
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, "Disconnect...    ");
     ret = CTOS_TCP_GPRSDisconnect(bSocket);
     state = Check_state(ret);
@@ -339,7 +337,7 @@ void GPRSDisconnect(void) {
 }
 
 void GPRSClose(void) {
-    ClearScreen(4, 14);
+    ClearScreen(4, 26);
     CTOS_LCDTPrintXY(1, 5, "CLOSING...    ");
     ret = CTOS_TCP_GPRSClose();
     state = Check_state(ret);
@@ -364,8 +362,11 @@ void gsmmain(void) {
     CTOS_LCDTSelectFontSize(0x101E);
 
     while (1) {
-        CTOS_LCDTClearDisplay();
-        ShowTitle(" GPRS SETTINGS        ");
+        CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
+        //setfont displayed on the screen.
+        CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
+        ClearScreen(4, 26);
+        ShowTitle(" GPRS SETTINGS           ");
         CTOS_LCDTPrintXY(3, 5, "1. Select SIM");
         CTOS_LCDTPrintXY(3, 6, "2. Internet ON");
         CTOS_LCDTPrintXY(3, 7, "3. Test Internet");
@@ -374,7 +375,7 @@ void gsmmain(void) {
         CTOS_LCDTPrintXY(3, 10, "6. Internet OFF");
 
         CTOS_KBDGet(&key);
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
 
         start = CTOS_TickGet();
         //switch(usItem)

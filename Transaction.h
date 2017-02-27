@@ -6,7 +6,8 @@ extern "C" {
 #endif
 
     //Message
-#define d_MSG_PRESENT_CARD						" Present Smart Card     "
+#define d_MSG_PRESENT_CARD						" Present Clients Card     "
+#define d_MSG_PRESENT_mCARD						" Present Merchant Card     "
 #define d_MSG_READ_CARD_OK						"READ CARD OK   "	
 #define d_MSG_REMOVE_CARD						"PLEASE REMOVE CARD    "
 #define d_MSG_APPROVED							"     APPROVED     "
@@ -26,7 +27,7 @@ extern "C" {
 #define d_MSG_INSERT_OR_SWIPE					"INSERT or SWIPE or"
 #define d_MSG_USE_OTHER_CARD					"USE OTHER CARD    "
 
-    char *amount;
+
     //char *cardnumber;
     char *cardpin;
 
@@ -45,6 +46,7 @@ extern "C" {
     char Get_PIN_Input(BYTE x, BYTE y, BYTE min, BYTE max, char mask, char *buf, BYTE *len);
     BYTE SignatureProcessing(void);
     USHORT Online_Process(BYTE *baData, USHORT usDataLen);
+    
     //void Print_Receipt(EMVCL_RC_DATA_EX *data, BYTE isNeedSignature, ULONG ulValue);
 #ifdef	__cplusplus
 }

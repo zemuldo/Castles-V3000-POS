@@ -20,7 +20,7 @@
 BOOL sleep_test(void *arg, BYTE mach_state) {
     BYTE *buf;
     BYTE Display[20];
-    CTOS_LCDTClearDisplay();
+    ClearScreen(4, 26);
     buf = (BYTE *) arg;
     sprintf(Display, "Sendstring = %s", buf);
     CTOS_LCDTPrintXY(1, PARENT_MSG_LINE1, Display);
@@ -31,14 +31,14 @@ BOOL sleep_test(void *arg, BYTE mach_state) {
         CTOS_Delay(2000);
         CTOS_LCDTPrintXY(1, PARENT_MSG_LINE3, "Sleep Done .... ");
         CTOS_Delay(1000);
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
     } else if (mach_state == d_PWR_STANDBY_MODE) {
         CTOS_LCDTPrintXY(1, PARENT_MSG_LINE2, "Doing standby .... ");
         CTOS_LCDTPrintXY(1, PARENT_MSG_LINE3, "Standby........ ");
         CTOS_Delay(2000);
         CTOS_LCDTPrintXY(1, PARENT_MSG_LINE3, "Standby Done .... ");
         CTOS_Delay(1000);
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
     }
     return d_OK;
 }
@@ -49,7 +49,7 @@ BOOL resume_test(void *arg, BYTE last_state, USHORT *wakesrc) {
     BYTE buff[32];
     buf = arg;
     printf("%s: last_state:%d, wakesrc:0x%x", buf, last_state, *wakesrc);
-    CTOS_LCDTClearDisplay();
+    ClearScreen(4, 26);
    
     if (last_state == d_PWR_STANDBY_MODE) {
         sprintf(buff, "Wakeup ..... 0x%x ", *wakesrc);
@@ -92,7 +92,7 @@ void sleepmode(void) {
     //CTOS_PowerAutoModeTimeToStandby(0); // prevent the system get into Standby Mode
     //CTOS_PowerAutoModeTimeToSleep(ulSec); //If you did not enter any key/Inset SmartCard / Swipe MSR, the AP will get into Sleep Mode
     do {
-        CTOS_LCDTClearDisplay();
+        ClearScreen(4, 26);
         CTOS_LCDTPrintXY(1, PARENT_MSG_LINE1, "Wiat 12s to Standby.");
         CTOS_KBDGet(&key);
     } while (key != d_KBD_CANCEL);

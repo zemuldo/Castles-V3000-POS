@@ -21,10 +21,6 @@
 **/
 void withdraw(void)
 {
-  CTOS_LCDTClearDisplay();
   
-  Do_Transaction();
-  return;
-    
 }
 
