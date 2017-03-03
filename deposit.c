@@ -74,7 +74,8 @@ void deposit(void)
         ShowTitle("    Card Deposit     ");
         CTOS_LCDTPrintXY(3, 5, "   Welcome ");
         CTOS_LCDTPrintXY(3, 6, "OK to Deposit ");
-        CTOS_KBDGet(&key);switch (key) {
+        CTOS_KBDGet(&key);
+        switch (key) {
             case d_KBD_ENTER:
                 transactdeposit();
                 break;

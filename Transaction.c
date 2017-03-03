@@ -1263,7 +1263,7 @@ void StartTrans(BYTE bType) {
                         ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
-                        CTOS_Delay(3000);
+                        CTOS_Delay(1000);
                         break;
                     }
                 }

@@ -63,6 +63,30 @@ BOOL Check_state(USHORT RET) {
     return TRUE;
 }
 
+BOOL Check_auto_state(USHORT RET) {
+    BYTE key = 0;
+    BYTE str[20];
+    DWORD State;
+    while (RET == d_TCP_IO_PROCESSING) {
+        RET = CTOS_TCP_GPRSStatus(&State);
+        sprintf(str, "Status = %X    ", State);
+        //CTOS_LCDTPrintXY(1, 6, str);
+        //CTOS_KBDHit(&key);
+        if (key == d_KBD_CANCEL)
+            break;
+    }
+    RET = CTOS_TCP_GPRSStatus(&State);
+    sprintf(str, "Status = %X    ", State);
+    //CTOS_LCDTPrintXY(1, 6, str);
+    if (RET != d_OK) {
+        sprintf(str, "Ret = %X   ", RET);
+        //CTOS_LCDTPrintXY(1, 7, str);
+        return FALSE;
+    }
+    //CTOS_Beep();
+    return TRUE;
+}
+
 void GSMtest(void) {
     USHORT rc = 0;
     BYTE key;

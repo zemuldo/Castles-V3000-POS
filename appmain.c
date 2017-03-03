@@ -33,7 +33,23 @@ BYTE password[8] = {'f', 'a', 'm', 'i', 'l', 'y', 'b', '\0'};
 BYTE passretrycheck[4];
 BYTE loggin[2];
 int token;
-
+STR strAPN[9];
+STR baID[6];
+STR baPW[6];
+BYTE str[20];
+USHORT usRtn;
+DWORD start, end, distance;
+USHORT i;
+//BYTE baIP_R [] = {0xDA, 0xD3, 0x23, 0xDB}; 
+//BYTE baIP_R [] = {197, 232, 39, 171};
+//USHORT usPort = 8019;
+//BYTE baIP_R [] = {218,211,35,220};
+//USHORT usPort = 80;
+//DWORD pdwState = 0;
+USHORT ret;
+//BYTE baIP_S[] = "\x00\x00\x00\x00";
+BYTE baIP_G[4];
+BYTE key, state, bSocket, bNo;
 int id;
 char *jsonout;
 char *responseExitCode;
@@ -101,7 +117,7 @@ void tryloginadmin(void) {
 
     if (loggin[1] == '1' && token == 1) {
         loggin[1] = '1';
-        token=1;
+        token = 1;
         admin_menu();
     } else {
         ClearScreen(4, 26);
@@ -124,14 +140,13 @@ void tryloginadmin(void) {
             root = cJSON_CreateObject();
             cJSON_AddItemToObject(root, "username", cJSON_CreateString(tempusername));
             cJSON_AddItemToObject(root, "password", cJSON_CreateString(temppassword));
-            
+
             jsonout = cJSON_Print(root);
             cJSON_Delete(root); /*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
 
-            
+
             CURL *curl;
             CURLcode res;
-            ClearScreen(4, 26);
             curl = curl_easy_init();
             if (curl) {
                 struct string2 s2;
@@ -153,8 +168,6 @@ void tryloginadmin(void) {
                 res = curl_easy_perform(curl);
 
                 //parse json object;
-
-
                 long http_code = 0;
                 curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
                 if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
@@ -206,7 +219,7 @@ void trylogin_cashier(void) {
 
     if (loggin[1] == '1' && token == 1) {
         loggin[1] = '1';
-        token=1;
+        token = 1;
         agent_menu();
     } else {
         ClearScreen(4, 26);
@@ -221,23 +234,19 @@ void trylogin_cashier(void) {
         CTOS_Delay(900);
         {
             cJSON *root, *fmt, *img, *thm, *fld;
-            int i; /* declare a few. */
+            int i;
 
-
-
-            //build json object-string
             root = cJSON_CreateObject();
             cJSON_AddItemToObject(root, "username", cJSON_CreateString(tempusername));
             cJSON_AddItemToObject(root, "password", cJSON_CreateString(temppassword));
 
 
             jsonout = cJSON_Print(root);
-            cJSON_Delete(root); /*printf("%s\n",jsonout);	free(jsonout);	/* Print to text, Delete the cJSON, print it, release the string. */
+            cJSON_Delete(root);
 
 
             CURL *curl;
             CURLcode res;
-            ClearScreen(4, 26);
             curl = curl_easy_init();
             if (curl) {
                 struct string2 s2;
@@ -259,8 +268,6 @@ void trylogin_cashier(void) {
                 res = curl_easy_perform(curl);
 
                 //parse json object;
-
-
                 long http_code = 0;
                 curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
                 if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
@@ -315,9 +322,6 @@ void agency_menu(void) {
 
     DebugInit();
 
-    emvcl_initdat.stOnEvent.OnCancelTransaction = NULL;
-    //emvcl_event.OnCancelTransaction = CancelTransactionEvent;
-    //emvcl_initdat.stOnEvent.OnShowMessage = NULL;
     emvcl_initdat.stOnEvent.OnShowMessage = ShowMessageEvent;
     emvcl_initdat.bConfigFilenameLen = strlen("V3CLVpTP_config.xml");
     emvcl_initdat.pConfigFilename = "V3CLVpTP_config.xml";
@@ -327,13 +331,11 @@ void agency_menu(void) {
         CTOS_KBDGet(&bKey);
         return;
     }
-    //CTOS_LanguageLCDFontSize(d_FONT_16x16, 0);
     CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
-    //setfont displayed on the screen.
     CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
     EMVCL_ShowVirtualLED(NULL);
     EMVCL_SetLED(0x0F, 0x08);
- while (1) {
+    while (1) {
         ClearScreen(4, 26);
         ShowTitle("   AGENT MENU           ");
         CTOS_LCDTPrintXY(2, 5, "1.A/C Opening");
@@ -396,14 +398,6 @@ void agency_menu(void) {
     }
 
 }
-
-
-
-/** 
- ** The main entry of the terminal application 
- **/
-
-
 BYTE key;
 STR * keyboardLayoutNumberWithRadixPoint[] = {"0", "1", "2", "3", "4", "5", "6", "7",
     "8", "9", "", "."};
@@ -417,157 +411,143 @@ int comparepasswords(BYTE inpass[], BYTE tempass[], int n) {
     for (i = 1; i <= n; i++) {
 
         if (inpass[i] == tempass[i]) return 1;
-        // better:
-        // if(fabs(a[ii]-b[ii]) < 1e-10 * (fabs(a[ii]) + fabs(b[ii]))) {
-        // with the appropriate tolerance
     }
     return 0;
 }
 
 void select_id(void) {
+    token = 0;
+    loggin[1] = '0';
     BYTE key;
-     while (1) {
-    CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
-    //setfont displayed on the screen.
-    CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
-    ClearScreen(4, 26);
-    ShowTitle("LOGIN                            ");
-    CTOS_LCDTPrintXY(4, 5, "Select User ID");
-    CTOS_LCDTPrintXY(4, 6, "1. Admin User");
-    CTOS_LCDTPrintXY(4, 7, "2. Cashier User");
-    CTOS_KBDGet(&key);
-    //login admin
-    if (key == d_KBD_1) {
-        tryloginadmin();
-        break;
-    }//login Cashier
-    else if (key == d_KBD_2) {
-        trylogin_cashier();
-        break;
-    } 
-    else if (key == d_KBD_CANCEL) {
-        exit(0);
-        break;
-    } else {
+    while (1) {
+        CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
+        CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
         ClearScreen(4, 26);
-        CTOS_LCDTPrintXY(3, 4, "Invalid ID");
-        CTOS_Delay(900);
-        select_id();
-        break;
+        ShowTitle("LOGIN                            ");
+        CTOS_LCDTPrintXY(4, 5, "Select User ID");
+        CTOS_LCDTPrintXY(4, 6, "1. Admin User");
+        CTOS_LCDTPrintXY(4, 7, "2. Cashier User");
+        CTOS_LCDTPrintXY(4, 8, "3. Settings");
+        CTOS_KBDGet(&key);
+        //login admin
+        if (key == d_KBD_1) {
+            tryloginadmin();
+            break;
+        } else if (key == d_KBD_2) {
+            trylogin_cashier();
+            break;
+        } else if (key == d_KBD_3) {
+            presettings();
+            break;
+        } else if (key == d_KBD_CANCEL) {
+            exit(0);
+            break;
+        } else {
+            ClearScreen(4, 26);
+            CTOS_LCDTPrintXY(3, 4, "Invalid Selection");
+            CTOS_Delay(900);
+            select_id();
+            break;
+        }
+
     }
-
-}
-}
-void loginwithpin(void) {
-
-    if (key == d_KBD_1) {
-
-        id = 1;
-        CTOS_LCDTPrintXY(4, 5, "Enter Admin Username");
-        CTOS_UIKeypad(4, 6, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, 0, tempusername, 13);
-        CTOS_LCDTPrintXY(4, 7, "Enter Admin Password");
-        CTOS_UIKeypad(4, 8, keyboardLayoutEnglish, 40, 80, d_TRUE, d_FALSE, 0, '*', temppassword, 13);
-    } else if (key == d_KBD_2) {
-        id = 2;
-    } else {
-        loginwithpin;
-    }
-    //Check if session is active
 }
 
 void agent_menu() {
-    //National ID
     while (1) {
-    token = 1;
-    loggin[1] = '1';
-    CTOS_PowerAutoModeEnable();
-    CTOS_LCDTClearDisplay();
-    ShowTitle("AGENT  MENU                ");
-    CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
-    CTOS_LCDTPrintXY(3, 6, "2. Sleep");
-    CTOS_LCDTPrintXY(3, 7, "3. Shutdown");
-    CTOS_LCDTPrintXY(3, 8, "4. Restart");
-    CTOS_LCDTPrintXY(3, 9, "5. Settings");
-    CTOS_LCDTPrintXY(1, 15, "              X-Logout");
-    CTOS_KBDGet(&key);
-    switch (key) {
-        case d_KBD_1:
-            agency_menu();
-            break;
-        case d_KBD_2:
-            sleepmode();
-            break;
-        case d_KBD_3:
-            CTOS_PowerOff();
-            break;
-        case d_KBD_4:
-            CTOS_SystemReset();
-            break;
-        case d_KBD_5:
-            settings();
-            break;
+        token = 1;
+        loggin[1] = '1';
+        CTOS_PowerAutoModeEnable();
+        CTOS_LCDTClearDisplay();
+        ShowTitle("AGENT  MENU                ");
+        CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
+        CTOS_LCDTPrintXY(3, 6, "2. Sleep");
+        CTOS_LCDTPrintXY(3, 7, "3. Shutdown");
+        CTOS_LCDTPrintXY(3, 8, "4. Restart");
+        CTOS_LCDTPrintXY(3, 9, "5. Settings");
+        CTOS_LCDTPrintXY(1, 15, "              X-Logout");
+        CTOS_KBDGet(&key);
+        switch (key) {
+            case d_KBD_1:
+                agency_menu();
+                break;
+            case d_KBD_2:
+                sleepmode();
+                break;
+            case d_KBD_3:
+                CTOS_PowerOff();
+                break;
+            case d_KBD_4:
+                CTOS_SystemReset();
+                break;
+            case d_KBD_5:
+                settings();
+                break;
 
-        case d_KBD_CANCEL:
-            token = 0;
-            loggin[1] = '0';
-            select_id();
+            case d_KBD_CANCEL:
+                token = 0;
+                loggin[1] = '0';
+                select_id();
+        }
+
+
     }
-
-
 }
-}
+
 void admin_menu() {
-     while (1) {
-    token = 1;
-    loggin[1] = '1';
-    CTOS_PowerAutoModeEnable();
-    CTOS_LCDTClearDisplay();
-    ShowTitle("ADMINISTRATOR MENU                ");
-    CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
-    CTOS_LCDTPrintXY(3, 6, "2. Create Users");
-    CTOS_LCDTPrintXY(3, 7, "3. Manage User");
-    CTOS_LCDTPrintXY(3, 8, "4. Batch Upload");
-    CTOS_LCDTPrintXY(3, 9, "5. Reconcl Repots");
-    CTOS_LCDTPrintXY(3, 10, "6. Repair Coms");
-    CTOS_LCDTPrintXY(3, 11, "7. Conn Status");
-    CTOS_LCDTPrintXY(3, 12, "8. Settings");
-    CTOS_LCDTPrintXY(1, 15, "              X-Logout");
-    CTOS_KBDGet(&key);
-    switch (key) {
-        case d_KBD_1:
-            agency_menu();
-            break;
-        case d_KBD_2:
-            break;
-        case d_KBD_3:
-            break;
-        case d_KBD_4:
-            filemanager();
-            break;
-        case d_KBD_5:
-            filemanager();
-            break;
-        case d_KBD_6:
-            break;
-        case d_KBD_7:
-            break;
-        case d_KBD_8:
-            settings();
-            break;
+    while (1) {
+        token = 1;
+        loggin[1] = '1';
+        CTOS_PowerAutoModeEnable();
+        CTOS_LCDTClearDisplay();
+        ShowTitle("ADMINISTRATOR MENU                ");
+        CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
+        CTOS_LCDTPrintXY(3, 6, "2. Create Users");
+        CTOS_LCDTPrintXY(3, 7, "3. Manage User");
+        CTOS_LCDTPrintXY(3, 8, "4. Batch Upload");
+        CTOS_LCDTPrintXY(3, 9, "5. Reconcl Repots");
+        CTOS_LCDTPrintXY(3, 10, "6. Repair Coms");
+        CTOS_LCDTPrintXY(3, 11, "7. Conn Status");
+        CTOS_LCDTPrintXY(3, 12, "8. Settings");
+        CTOS_LCDTPrintXY(1, 15, "              X-Logout");
+        CTOS_KBDGet(&key);
+        switch (key) {
+            case d_KBD_1:
+                agency_menu();
+                break;
+            case d_KBD_2:
+                break;
+            case d_KBD_3:
+                break;
+            case d_KBD_4:
+                filemanager();
+                break;
+            case d_KBD_5:
+                filemanager();
+                break;
+            case d_KBD_6:
+                break;
+            case d_KBD_7:
+                break;
+            case d_KBD_8:
+                settings();
+                break;
 
-        case d_KBD_CANCEL:
-            token = 0;
-            loggin[1] = '0';
-            select_id();
+            case d_KBD_CANCEL:
+                token = 0;
+                loggin[1] = '0';
+                select_id();
+        }
+
     }
-
-     }
 }
 
 int main(int argc, char *argv[]) {
-    
-    GSMtest();
-    GPRSOpen();
+
+    gsminit();
+    CTOS_Delay(900);
+    opengsm();
+    CTOS_LCDTClearDisplay();
     token = 0;
     loggin[1] = '0';
     select_id();
@@ -575,6 +555,144 @@ int main(int argc, char *argv[]) {
     exit(0);
 }
 
+void gsminit() {
+    USHORT rc = 0;
+    BYTE key;
+    BYTE imsi[128];
+    BYTE name[128];
+    BYTE strength = 99;
+    BYTE nlen;
+    BYTE sBuf[128];
+    BYTE State;
+    BYTE bID;
+    CTOS_LCDTClearDisplay();
+    CTOS_LCDTPrintXY(1, 2, "  Initializing.....");
+    rc = CTOS_GSMOpen(9600, 1);
+    if (rc != d_OK) {
+        sprintf(sBuf, "%X ", rc);
+        return;
+    }
+
+    if (key == d_KBD_2) {
+        usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM2);
+        if (usRtn != d_OK) {
+            sprintf(str, "SelSIM: %X ", ret);
+            CTOS_KBDHit(&key);
+        }
+    } else {
+        usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM1);
+        if (usRtn != d_OK) {
+            sprintf(str, "SelSIM: %X ", ret);
+            CTOS_KBDHit(&key);
+        }
+    }
+    usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM1);
+    if (usRtn != d_OK) {
+        sprintf(str, "SelSIM: %X ", ret);
+    }
+
+    CTOS_GSMGetBAND(&bID);
+    switch (bID) {
+        case d_GSM_900_1800:
+            break;
+        case d_GSM_900_1900:
+            break;
+        case d_GSM_850_1800:
+            break;
+        case d_GSM_850_1900:
+            break;
+        default:
+            break;
+    }
+    start = CTOS_TickGet();
+    do {
+        memset(str, 0x00, sizeof (str));
+        rc = CTOS_SIMCheckReady();
+        sprintf(str, "%X", rc);
+
+        CTOS_Delay(500);
+        end = CTOS_TickGet();
+        distance = end - start;
+    } while ((rc != d_GSM_SIM_READY) && (distance < 1000));
+    if (rc == d_GSM_SIM_READY) {
+        CTOS_Delay(2000);
+    } else {
+    }
+    memset(sBuf, 0x00, sizeof (sBuf));
+    start = CTOS_TickGet();
+    do {
+        rc = CTOS_GPRSGetRegState(&State);
+        if (State == d_GSM_GPRS_STATE_NOT_REG)
+            sprintf(sBuf, "%s     ", "NOT_REG");
+        else if (State == d_GSM_GPRS_STATE_REG)
+            sprintf(sBuf, "%s     ", "REG");
+        else if (State == d_GSM_GPRS_STATE_TRYING)
+            sprintf(sBuf, "%s     ", "TRYING");
+        else if (State == d_GSM_GPRS_STATE_DENY)
+            sprintf(sBuf, "%s     ", "DENY");
+        else if (State == d_GSM_GPRS_STATE_UNKNOW)
+            sprintf(sBuf, "%s     ", "UNKNOW");
+        else if (State == d_GSM_GPRS_STATE_ROAM)
+            sprintf(sBuf, "%s     ", "ROAM");
+        CTOS_KBDHit(&key);
+        if (key == d_KBD_CANCEL)
+            break;
+
+        CTOS_Delay(500);
+        end = CTOS_TickGet();
+        distance = end - start;
+    } while (((State == d_GSM_GPRS_STATE_TRYING) || (State == d_GSM_GPRS_STATE_UNKNOW)) || (!(!(State != d_GSM_GPRS_STATE_REG) || !(State != d_GSM_GPRS_STATE_ROAM)) && (distance < 3000))); //  wait for 30 seconds
+
+    do {
+        rc = CTOS_GSMSignalQuality(&strength);
+        CTOS_Delay(500);
+        memset(sBuf, 0x00, sizeof (sBuf));
+        sprintf(sBuf, "GSMSgnQty:%d ", strength);
+
+        CTOS_KBDHit(&key);
+        if (key == d_KBD_CANCEL)
+            break;
+    } while (strength < 10 || strength > 30);
+    memset(imsi, 0, sizeof (imsi));
+    rc = CTOS_SIMGetIMSI(imsi);
+    if (rc == d_OK) {
+        sprintf(sBuf, "IMSI: %s ", imsi);
+    } else {
+        sprintf(sBuf, "SIMGetIMSI: %X ", rc);
+    }
+
+    memset(name, 0, sizeof (name));
+    rc = CTOS_GSMQueryOperatorName(name, &nlen);
+    if (rc == d_OK) {
+        sprintf(sBuf, "Oprtr: %s", name);
+    } else {
+        sprintf(sBuf, "GSMQON: %X ", rc);
+    }
+
+    CTOS_KBDHit(&key);
+    if (key == d_KBD_CANCEL) {
+    }
 
 
+}
 
+void opengsm() {
+
+
+    CTOS_TCP_GPRSInit();
+    BYTE baIP_S[] = "\x00\x00\x00\x00";
+    strcpy(strAPN, "internet");
+    strcpy(baID, "yahoo");
+    strcpy(baPW, "yahoo");
+    ret = CTOS_TCP_GPRSOpen(baIP_S, strAPN, baID, baPW);
+    state = Check_auto_state(ret);
+    if (state != TRUE) {
+        return;
+    }
+    ret = CTOS_TCP_GPRSGetIP(baIP_G);
+    sprintf(str, "IP Ret = %X   ", ret);
+    for (i = 0; i < 4; i++) {
+        sprintf(str, "%02X", baIP_G[i]);
+        return;
+    }
+}
