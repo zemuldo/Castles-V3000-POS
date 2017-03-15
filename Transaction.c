@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <ctosapi.h>
 #include <emv_cl.h>
+#include "emvaplib.h"
 #include "wub_lib.h"
 #include "debug2.h"
 #include "Transaction.h"
@@ -36,7 +37,9 @@
 #define d_EMV_CHIP_ONL_APPROVAL					(USHORT)0x0006
 #define d_EMV_CHIP_ONL_DECLINED					(USHORT)0x0007
 #define d_EMV_CHIP_ONL_ABORT					(USHORT)0x0008
-
+#define chip (int)2
+#define nfc (int)1
+int readType;
 USHORT usTxResult;
 char baInput[20];
 int iLen;
@@ -1159,6 +1162,10 @@ void StartTrans(BYTE bType) {
     BOOL isContactInterfaceSupport;
     BOOL isMastripeInterfaceSupport;
     BYTE key;
+    
+    BYTE label_len, label[32];
+    BYTE CAPKNum;
+    BYTE SelectedAID[16], SelectedAIDLen;
     DebugAddINT("               ", 0);
     DebugAddINT("               ", 0);
 
@@ -1538,6 +1545,7 @@ ex:
                 if (isContactlessInterfaceSupport == TRUE) {
                     ulAPRtn = EMVCL_PerformTransactionEx(&stRCDataEx);
                     if (ulAPRtn != d_EMVCL_PENDING) {
+                        readType=nfc;
                         break;
                     }
                 }
@@ -1548,11 +1556,12 @@ ex:
                     CTOS_SCStatus(d_SC_USER, &bStatus);
 
                     if ((bStatus & d_MK_SC_PRESENT)) {
-                        // Check the CHIP Card is inserted 
+                        //Check the CHIP Card is inserted 
                         ClearScreen(4, 26);
                         CTOS_LCDTPrintXY(1, 5, d_MSG_APPROVED);
                         CTOS_LCDTPrintXY(2, 6, baAmount);
                         CTOS_Delay(3000);
+                        readType=chip;
                         break;
                     }
                 }

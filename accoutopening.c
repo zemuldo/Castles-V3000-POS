@@ -117,7 +117,23 @@ void create_account(void) {
     }
     //Details fully verified
     //make the request to create the account with the bank
-    account_post(fname, mname, lname, mobile, idno);
+    int i;
+    BYTE pin[4];
+    ClearScreen(4, 26);
+    CTOS_LCDTPrintXY(2, 5, "Enter  Auth PIN:");
+    if (enter_pin(3, 6, 4, 16, '*', pin, &i) == TRUE) {
+        if (pin == '4', '4', '4', '4') {
+            account_post(fname, mname, lname, mobile, idno);
+            return;
+        }
+    } else {
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(1, 4, "Wrong Pin");
+        CTOS_Delay(1000);
+        return;
+
+    }
+
 
     return;
 }
@@ -147,8 +163,6 @@ void create_account(void) {
 
 /* Parse text to JSON, then render back to text, and print! */
 void account_doit(char *text) {
-    ClearScreen(4, 26);
-    CTOS_KBDGet(&key);
     char *jsonout;
     cJSON *json;
 
@@ -270,8 +284,7 @@ int account_post(BYTE name1[23], BYTE name2[23], BYTE name3[23], BYTE mobileno[1
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             if (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK) {
-                ClearScreen(4, 26);
-                
+
                 jsonresponse = malloc(sizeof (char) * strlen(s.ptr));
                 strcpy(jsonresponse, s.ptr);
                 account_doit(jsonresponse);
@@ -286,6 +299,8 @@ int account_post(BYTE name1[23], BYTE name2[23], BYTE name3[23], BYTE mobileno[1
                 //CTOS_LCDTPrintXY(4, 8, accountnumber);
                 //CTOS_LCDTPrintXY(4, 9, accountname);
                 //CTOS_KBDGet(&key);
+                
+                ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(4, 6, message);
                 CTOS_KBDGet(&key);
                 accntvalidation = 1;
@@ -294,7 +309,7 @@ int account_post(BYTE name1[23], BYTE name2[23], BYTE name3[23], BYTE mobileno[1
                 print_agentrcpt();
                 free(s.ptr);
                 curl_easy_cleanup(curl);
-                return 1;
+                return  accntvalidation;
             } else if (http_code == 401) {
                 ClearScreen(4, 26);
                 CTOS_LCDTPrintXY(4, 6, " Wrong PIN");
@@ -302,11 +317,12 @@ int account_post(BYTE name1[23], BYTE name2[23], BYTE name3[23], BYTE mobileno[1
                 CTOS_Delay(3000);
                 accntvalidation = 0;
                 curl_easy_cleanup(curl);
-                return 0;
+                return  accntvalidation;
             }
             CTOS_LCDTPrintXY(3, 6, " Failed");
             CTOS_KBDGet(&key);
-            return;
+            accntvalidation = 0;
+            return  accntvalidation;
             curl_easy_cleanup(curl);
         }
 

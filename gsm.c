@@ -431,3 +431,145 @@ void gsmmain(void) {
     }
 
 }
+
+void autogsminit() {
+    USHORT rc = 0;
+    BYTE key;
+    BYTE imsi[128];
+    BYTE name[128];
+    BYTE strength = 99;
+    BYTE nlen;
+    BYTE sBuf[128];
+    BYTE State;
+    BYTE bID;
+    CTOS_LCDTClearDisplay();
+    CTOS_LCDTPrintXY(1, 2, "  Initializing.....");
+    rc = CTOS_GSMOpen(9600, 1);
+    if (rc != d_OK) {
+        sprintf(sBuf, "%X ", rc);
+        return;
+    }
+
+    if (key == d_KBD_2) {
+        usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM2);
+        if (usRtn != d_OK) {
+            sprintf(str, "SelSIM: %X ", ret);
+            CTOS_KBDHit(&key);
+        }
+    } else {
+        usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM1);
+        if (usRtn != d_OK) {
+            sprintf(str, "SelSIM: %X ", ret);
+            CTOS_KBDHit(&key);
+        }
+    }
+    usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM1);
+    if (usRtn != d_OK) {
+        sprintf(str, "SelSIM: %X ", ret);
+    }
+
+    CTOS_GSMGetBAND(&bID);
+    switch (bID) {
+        case d_GSM_900_1800:
+            break;
+        case d_GSM_900_1900:
+            break;
+        case d_GSM_850_1800:
+            break;
+        case d_GSM_850_1900:
+            break;
+        default:
+            break;
+    }
+    start = CTOS_TickGet();
+    do {
+        memset(str, 0x00, sizeof (str));
+        rc = CTOS_SIMCheckReady();
+        sprintf(str, "%X", rc);
+
+        CTOS_Delay(500);
+        end = CTOS_TickGet();
+        distance = end - start;
+    } while ((rc != d_GSM_SIM_READY) && (distance < 1000));
+    if (rc == d_GSM_SIM_READY) {
+        CTOS_Delay(2000);
+    } else {
+    }
+    memset(sBuf, 0x00, sizeof (sBuf));
+    start = CTOS_TickGet();
+    do {
+        rc = CTOS_GPRSGetRegState(&State);
+        if (State == d_GSM_GPRS_STATE_NOT_REG)
+            sprintf(sBuf, "%s     ", "NOT_REG");
+        else if (State == d_GSM_GPRS_STATE_REG)
+            sprintf(sBuf, "%s     ", "REG");
+        else if (State == d_GSM_GPRS_STATE_TRYING)
+            sprintf(sBuf, "%s     ", "TRYING");
+        else if (State == d_GSM_GPRS_STATE_DENY)
+            sprintf(sBuf, "%s     ", "DENY");
+        else if (State == d_GSM_GPRS_STATE_UNKNOW)
+            sprintf(sBuf, "%s     ", "UNKNOW");
+        else if (State == d_GSM_GPRS_STATE_ROAM)
+            sprintf(sBuf, "%s     ", "ROAM");
+        CTOS_KBDHit(&key);
+        if (key == d_KBD_CANCEL)
+            break;
+
+        CTOS_Delay(500);
+        end = CTOS_TickGet();
+        distance = end - start;
+    } while (((State == d_GSM_GPRS_STATE_TRYING) || (State == d_GSM_GPRS_STATE_UNKNOW)) || (!(!(State != d_GSM_GPRS_STATE_REG) || !(State != d_GSM_GPRS_STATE_ROAM)) && (distance < 3000))); //  wait for 30 seconds
+
+    do {
+        rc = CTOS_GSMSignalQuality(&strength);
+        CTOS_Delay(500);
+        memset(sBuf, 0x00, sizeof (sBuf));
+        sprintf(sBuf, "GSMSgnQty:%d ", strength);
+
+        CTOS_KBDHit(&key);
+        if (key == d_KBD_CANCEL)
+            break;
+    } while (strength < 10 || strength > 30);
+    memset(imsi, 0, sizeof (imsi));
+    rc = CTOS_SIMGetIMSI(imsi);
+    if (rc == d_OK) {
+        sprintf(sBuf, "IMSI: %s ", imsi);
+    } else {
+        sprintf(sBuf, "SIMGetIMSI: %X ", rc);
+    }
+
+    memset(name, 0, sizeof (name));
+    rc = CTOS_GSMQueryOperatorName(name, &nlen);
+    if (rc == d_OK) {
+        sprintf(sBuf, "Oprtr: %s", name);
+    } else {
+        sprintf(sBuf, "GSMQON: %X ", rc);
+    }
+
+    CTOS_KBDHit(&key);
+    if (key == d_KBD_CANCEL) {
+    }
+
+
+}
+
+void autoopengsm() {
+
+
+    CTOS_TCP_GPRSInit();
+    BYTE baIP_S[] = "\x00\x00\x00\x00";
+    strcpy(strAPN, "internet");
+    strcpy(baID, "yahoo");
+    strcpy(baPW, "yahoo");
+    ret = CTOS_TCP_GPRSOpen(baIP_S, strAPN, baID, baPW);
+    state = Check_auto_state(ret);
+    if (state != TRUE) {
+        return;
+    }
+    ret = CTOS_TCP_GPRSGetIP(baIP_G);
+    sprintf(str, "IP Ret = %X   ", ret);
+    for (i = 0; i < 4; i++) {
+        sprintf(str, "%02X", baIP_G[i]);
+        return;
+    }
+}

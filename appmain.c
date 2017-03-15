@@ -40,6 +40,9 @@ BYTE str[20];
 USHORT usRtn;
 DWORD start, end, distance;
 USHORT i;
+BYTE pin[4];
+int admin_fla;
+int cashier_fla;
 //BYTE baIP_R [] = {0xDA, 0xD3, 0x23, 0xDB}; 
 //BYTE baIP_R [] = {197, 232, 39, 171};
 //USHORT usPort = 8019;
@@ -100,6 +103,14 @@ size_t writefunc2(void *ptr, size_t size, size_t nmemb, struct string2 *s2) {
 }
 
 void tryloginadmin(void) {
+    if (admin_fla >2) {
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(2, 5, "Maximum Failed Attempts.");
+        CTOS_LCDTPrintXY(2, 6, "    Contact Admin");
+        CTOS_LCDTPrintXY(2, 7, "        !!");
+        CTOS_KBDGet(&key);
+        select_id();
+    }
 
     BYTE key;
     BYTE sBuf[128];
@@ -184,6 +195,7 @@ void tryloginadmin(void) {
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Invalid Details");
                     CTOS_Delay(900);
+                    admin_fla++;
                     select_id();
                 } else {
                     token = 0;
@@ -192,6 +204,7 @@ void tryloginadmin(void) {
                     CTOS_LCDTPrintXY(2, 4, "Login Failed");
                     CTOS_Delay(900);
                     curl_easy_cleanup(curl);
+                    admin_fla++;
                     select_id();
                 }
             }
@@ -206,6 +219,15 @@ void trylogin_cashier(void) {
     BYTE key;
     BYTE sBuf[128];
     int accntvalidation = 0;
+
+    if (cashier_fla >2) {
+        ClearScreen(4, 26);
+        CTOS_LCDTPrintXY(2, 5, "Maximum Failed Attempts.");
+        CTOS_LCDTPrintXY(2, 6, "    Contact Admin");
+        CTOS_LCDTPrintXY(2, 7, "        !!");
+        CTOS_KBDGet(&key);
+        select_id();
+    }
     //Define letter mapping to each key
     //normal english keyboard
     STR * keyboardLayoutEnglish[] = {" 0", "qzQZ1", "abcABC2", "defDEF3", "ghiGHI4",
@@ -286,6 +308,7 @@ void trylogin_cashier(void) {
                     ClearScreen(4, 26);
                     CTOS_LCDTPrintXY(2, 4, "Invalid Details");
                     CTOS_Delay(900);
+                    cashier_fla++;
                     select_id();
                 } else {
                     token = 0;
@@ -294,6 +317,7 @@ void trylogin_cashier(void) {
                     CTOS_LCDTPrintXY(2, 4, "Login Failed");
                     CTOS_Delay(900);
                     curl_easy_cleanup(curl);
+                    cashier_fla++;
                     select_id();
                 }
             }
@@ -337,7 +361,7 @@ void agency_menu(void) {
     EMVCL_SetLED(0x0F, 0x08);
     while (1) {
         ClearScreen(4, 26);
-        ShowTitle("   AGENT MENU           ");
+        ShowTitle("   AGENT MENU                   ");
         CTOS_LCDTPrintXY(2, 5, "1.A/C Opening");
         CTOS_LCDTPrintXY(2, 6, "2.Cash Withdrawal");
         CTOS_LCDTPrintXY(2, 7, "3.Card Deposit");
@@ -420,10 +444,11 @@ void select_id(void) {
     loggin[1] = '0';
     BYTE key;
     while (1) {
-        CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
-        CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
         ClearScreen(4, 26);
         ShowTitle("LOGIN                            ");
+        CTOS_LanguageLCDFontSize(d_FONT_12x24, 0);
+        CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
+
         CTOS_LCDTPrintXY(4, 5, "Select User ID");
         CTOS_LCDTPrintXY(4, 6, "1. Admin User");
         CTOS_LCDTPrintXY(4, 7, "2. Cashier User");
@@ -437,8 +462,20 @@ void select_id(void) {
             trylogin_cashier();
             break;
         } else if (key == d_KBD_3) {
-            presettings();
-            break;
+            ClearScreen(4, 26);
+            CTOS_LCDTPrintXY(2, 5, "Enter  Setup PIN:");
+            if (enter_pin(3, 6, 4, 16, '*', pin, &i) == TRUE) {
+                if (pin == '4', '4', '4', '4') {
+                    presettings();
+                    break;
+                }
+            } else {
+                ClearScreen(4, 26);
+                CTOS_LCDTPrintXY(1, 4, "Wrong Pin");
+                CTOS_Delay(1000);
+                select_id();
+                break;
+            }
         } else if (key == d_KBD_CANCEL) {
             exit(0);
             break;
@@ -532,7 +569,7 @@ void admin_menu() {
             case d_KBD_8:
                 settings();
                 break;
-
+                //logout
             case d_KBD_CANCEL:
                 token = 0;
                 loggin[1] = '0';
@@ -544,155 +581,15 @@ void admin_menu() {
 
 int main(int argc, char *argv[]) {
 
-    gsminit();
-    CTOS_Delay(900);
-    opengsm();
+    autogsminit();
+    autoopengsm();
     CTOS_LCDTClearDisplay();
     token = 0;
     loggin[1] = '0';
+    admin_fla = 0;
+    cashier_fla=0;
     select_id();
 
     exit(0);
 }
 
-void gsminit() {
-    USHORT rc = 0;
-    BYTE key;
-    BYTE imsi[128];
-    BYTE name[128];
-    BYTE strength = 99;
-    BYTE nlen;
-    BYTE sBuf[128];
-    BYTE State;
-    BYTE bID;
-    CTOS_LCDTClearDisplay();
-    CTOS_LCDTPrintXY(1, 2, "  Initializing.....");
-    rc = CTOS_GSMOpen(9600, 1);
-    if (rc != d_OK) {
-        sprintf(sBuf, "%X ", rc);
-        return;
-    }
-
-    if (key == d_KBD_2) {
-        usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM2);
-        if (usRtn != d_OK) {
-            sprintf(str, "SelSIM: %X ", ret);
-            CTOS_KBDHit(&key);
-        }
-    } else {
-        usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM1);
-        if (usRtn != d_OK) {
-            sprintf(str, "SelSIM: %X ", ret);
-            CTOS_KBDHit(&key);
-        }
-    }
-    usRtn = CTOS_GSMSelectSIM(d_GPRS_SIM1);
-    if (usRtn != d_OK) {
-        sprintf(str, "SelSIM: %X ", ret);
-    }
-
-    CTOS_GSMGetBAND(&bID);
-    switch (bID) {
-        case d_GSM_900_1800:
-            break;
-        case d_GSM_900_1900:
-            break;
-        case d_GSM_850_1800:
-            break;
-        case d_GSM_850_1900:
-            break;
-        default:
-            break;
-    }
-    start = CTOS_TickGet();
-    do {
-        memset(str, 0x00, sizeof (str));
-        rc = CTOS_SIMCheckReady();
-        sprintf(str, "%X", rc);
-
-        CTOS_Delay(500);
-        end = CTOS_TickGet();
-        distance = end - start;
-    } while ((rc != d_GSM_SIM_READY) && (distance < 1000));
-    if (rc == d_GSM_SIM_READY) {
-        CTOS_Delay(2000);
-    } else {
-    }
-    memset(sBuf, 0x00, sizeof (sBuf));
-    start = CTOS_TickGet();
-    do {
-        rc = CTOS_GPRSGetRegState(&State);
-        if (State == d_GSM_GPRS_STATE_NOT_REG)
-            sprintf(sBuf, "%s     ", "NOT_REG");
-        else if (State == d_GSM_GPRS_STATE_REG)
-            sprintf(sBuf, "%s     ", "REG");
-        else if (State == d_GSM_GPRS_STATE_TRYING)
-            sprintf(sBuf, "%s     ", "TRYING");
-        else if (State == d_GSM_GPRS_STATE_DENY)
-            sprintf(sBuf, "%s     ", "DENY");
-        else if (State == d_GSM_GPRS_STATE_UNKNOW)
-            sprintf(sBuf, "%s     ", "UNKNOW");
-        else if (State == d_GSM_GPRS_STATE_ROAM)
-            sprintf(sBuf, "%s     ", "ROAM");
-        CTOS_KBDHit(&key);
-        if (key == d_KBD_CANCEL)
-            break;
-
-        CTOS_Delay(500);
-        end = CTOS_TickGet();
-        distance = end - start;
-    } while (((State == d_GSM_GPRS_STATE_TRYING) || (State == d_GSM_GPRS_STATE_UNKNOW)) || (!(!(State != d_GSM_GPRS_STATE_REG) || !(State != d_GSM_GPRS_STATE_ROAM)) && (distance < 3000))); //  wait for 30 seconds
-
-    do {
-        rc = CTOS_GSMSignalQuality(&strength);
-        CTOS_Delay(500);
-        memset(sBuf, 0x00, sizeof (sBuf));
-        sprintf(sBuf, "GSMSgnQty:%d ", strength);
-
-        CTOS_KBDHit(&key);
-        if (key == d_KBD_CANCEL)
-            break;
-    } while (strength < 10 || strength > 30);
-    memset(imsi, 0, sizeof (imsi));
-    rc = CTOS_SIMGetIMSI(imsi);
-    if (rc == d_OK) {
-        sprintf(sBuf, "IMSI: %s ", imsi);
-    } else {
-        sprintf(sBuf, "SIMGetIMSI: %X ", rc);
-    }
-
-    memset(name, 0, sizeof (name));
-    rc = CTOS_GSMQueryOperatorName(name, &nlen);
-    if (rc == d_OK) {
-        sprintf(sBuf, "Oprtr: %s", name);
-    } else {
-        sprintf(sBuf, "GSMQON: %X ", rc);
-    }
-
-    CTOS_KBDHit(&key);
-    if (key == d_KBD_CANCEL) {
-    }
-
-
-}
-
-void opengsm() {
-
-
-    CTOS_TCP_GPRSInit();
-    BYTE baIP_S[] = "\x00\x00\x00\x00";
-    strcpy(strAPN, "internet");
-    strcpy(baID, "yahoo");
-    strcpy(baPW, "yahoo");
-    ret = CTOS_TCP_GPRSOpen(baIP_S, strAPN, baID, baPW);
-    state = Check_auto_state(ret);
-    if (state != TRUE) {
-        return;
-    }
-    ret = CTOS_TCP_GPRSGetIP(baIP_G);
-    sprintf(str, "IP Ret = %X   ", ret);
-    for (i = 0; i < 4; i++) {
-        sprintf(str, "%02X", baIP_G[i]);
-        return;
-    }
-}
