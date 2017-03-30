@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>../../../../cygwin/usr/include/C_CkCrypt2.h</itemPath>
       <itemPath>Setting.h</itemPath>
       <itemPath>Transaction.h</itemPath>
       <itemPath>appmain.h</itemPath>
@@ -19,6 +20,7 @@
       <itemPath>settings.h</itemPath>
       <itemPath>systemops.h</itemPath>
       <itemPath>ussd.h</itemPath>
+      <itemPath>utilitypay.h</itemPath>
       <itemPath>withdraw.h</itemPath>
       <itemPath>wub_lib.h</itemPath>
     </logicalFolder>

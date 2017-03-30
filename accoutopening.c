@@ -117,24 +117,7 @@ void create_account(void) {
     }
     //Details fully verified
     //make the request to create the account with the bank
-    int i;
-    BYTE pin[4];
-    ClearScreen(4, 26);
-    CTOS_LCDTPrintXY(2, 5, "Enter  Auth PIN:");
-    if (enter_pin(3, 6, 4, 16, '*', pin, &i) == TRUE) {
-        if (pin == '4', '4', '4', '4') {
-            account_post(fname, mname, lname, mobile, idno);
-            return;
-        }
-    } else {
-        ClearScreen(4, 26);
-        CTOS_LCDTPrintXY(1, 4, "Wrong Pin");
-        CTOS_Delay(1000);
-        return;
-
-    }
-
-
+     account_post(fname, mname, lname, mobile, idno);
     return;
 }
 

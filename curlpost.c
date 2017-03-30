@@ -1167,6 +1167,7 @@ int cardles_utility_post(BYTE tmamount[20],BYTE accountNo[15],BYTE tmputilityNo[
                 curl_easy_cleanup(curl);
                 return 0;
             }
+            ClearScreen(4, 26);
             CTOS_LCDTPrintXY(3, 6, " Failed");
             CTOS_KBDGet(&key);
             return;

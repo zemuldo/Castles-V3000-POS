@@ -12,6 +12,7 @@
 //#include "curlpost.h"
 #include "debug2.h"
 #include "wub_lib.h"
+#include "utilitypay.h"
 //
 #define _SIMULATE_ONLINE_RESULT
 
@@ -60,6 +61,7 @@ BYTE g_bTxntype;
 BYTE ulitityNo[9];
 BYTE countycode[9];
 BYTE utilCode[4];
+char *utility_type;
 
 #define d_INIT_TRANS	0x01
 
@@ -754,6 +756,7 @@ void utility_cardless(BYTE bType) {
     char *tmp;
     
     
+    
     DebugAddINT("               ", 0);
     DebugAddINT("               ", 0);
     
@@ -777,11 +780,7 @@ void utility_cardless(BYTE bType) {
         CTOS_LCDTPrintXY(2, 5, "Enter Utility No:");
        CTOS_UIKeypad(2, 6, keyboardLayoutNumber, 40, 80, d_FALSE, d_FALSE, 0, 0, ulitityNo,
                     8);
-       ClearScreen(4, 26);
-    CTOS_LCDTPrintXY(2, 5, "Confirm Payment:"); 
-     CTOS_LCDTPrintXY(2, 6, baAmount); 
-     CTOS_LCDTPrintXY(9, 6, "To BillNo");
-     CTOS_LCDTPrintXY(2, 7, ulitityNo);
+       
      
      //Get the account Number
    ClearScreen(4, 26);
@@ -790,13 +789,15 @@ void utility_cardless(BYTE bType) {
        //confirm Account Number
     ClearScreen(4, 26);
     CTOS_LCDTPrintXY(3, 5, "Please Confirm");
-    CTOS_LCDTPrintXY(3, 6, "Pay  KSH:  ");
-    CTOS_LCDTPrintXY(14, 6, baAmount);
-    CTOS_LCDTPrintXY(3, 7, "To Account Number:");
-    CTOS_LCDTPrintXY(3, 8, depositaccnt);
+    CTOS_LCDTPrintXY(3, 6, "Pay ");
+    CTOS_LCDTPrintXY(8, 6, utility_type);
+    CTOS_LCDTPrintXY(3, 7, "KSH:  ");  
+    CTOS_LCDTPrintXY(9, 7, g_baInputAmt);
+    CTOS_LCDTPrintXY(3, 8, "To Account Number:");
+    CTOS_LCDTPrintXY(3, 9, depositaccnt);
      //Pressing okay-Accepting accnt Pressing X returns
-    CTOS_LCDTPrintXY(3, 10, " OK TO CONFIRM");
-    CTOS_LCDTPrintXY(3, 11, " X TO CANCEL");
+    CTOS_LCDTPrintXY(3, 10, "OK TO CONFIRM");
+    CTOS_LCDTPrintXY(3, 11, "X TO CANCEL");
      CTOS_KBDGet(&key);
     if (key == d_KBD_ENTER) {
         ClearScreen(4, 26);
@@ -858,13 +859,16 @@ void dorutilitypay() {
 
     switch (key) {
         case '1':
+            utility_type="Water";
             utility_code = 200;
             break;
         case '2':
+            utility_type="KPLC";
             utility_code = 300;
             break;
 
         case '3':
+            utility_type="DSTV";
             utility_code = 400;
             break;
         case d_KBD_CANCEL:
@@ -883,7 +887,7 @@ void dorutilitypay() {
     } else {
     }
     ClearScreen(4, 26);
-    ShowTitle("  Utility Payment Method         ");
+    ShowTitle("  Utility Payment                ");
     CTOS_LCDTPrintXY(2, 5, "1.Card Payment");
     CTOS_LCDTPrintXY(2, 6, "2.Cardless Payment");
 
