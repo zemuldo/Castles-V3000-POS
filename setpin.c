@@ -429,7 +429,9 @@ void changepin(void) {
     //get card details
     getcarddata(&stRCDataEx);
     //SEND REQUEST
-    setpin_post(pin, cardvendor, cardnumber, expdate,newpin);
+    
+    //fredy
+    //setpin_post(pin, cardvendor, cardnumber, expdate,newpin);
     
     
     return;

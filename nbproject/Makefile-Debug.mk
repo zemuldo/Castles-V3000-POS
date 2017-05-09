@@ -17,7 +17,7 @@ RANLIB=ranlib
 CC=arm-brcm-linux-gnueabi-gcc
 CCC=arm-brcm-linux-gnueabi-g++
 CXX=arm-brcm-linux-gnueabi-g++
-FC=g77.exe
+FC=gfortran.exe
 AS=as
 
 # Macros
@@ -42,7 +42,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/withdraw.o \
 	${OBJECTDIR}/balance.o \
 	${OBJECTDIR}/paywith.o \
+	${OBJECTDIR}/checkbalance.o \
 	${OBJECTDIR}/cJSON.o \
+	${OBJECTDIR}/vendor.o \
 	${OBJECTDIR}/cardlessdeposit.o \
 	${OBJECTDIR}/settings.o \
 	${OBJECTDIR}/appmain.o \
@@ -53,6 +55,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/setpin.o \
 	${OBJECTDIR}/systemops.o \
 	${OBJECTDIR}/ministatement.o \
+	${OBJECTDIR}/meterdetails.o \
 	${OBJECTDIR}/utilitypay.o \
 	${OBJECTDIR}/agentballance.o \
 	${OBJECTDIR}/ussd.o \
@@ -116,9 +119,17 @@ ${OBJECTDIR}/paywith.o: paywith.c
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/paywith.o paywith.c
 
+${OBJECTDIR}/checkbalance.o: checkbalance.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/checkbalance.o checkbalance.c
+
 ${OBJECTDIR}/cJSON.o: cJSON.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/cJSON.o cJSON.c
+
+${OBJECTDIR}/vendor.o: vendor.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/vendor.o vendor.c
 
 ${OBJECTDIR}/cardlessdeposit.o: cardlessdeposit.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -159,6 +170,10 @@ ${OBJECTDIR}/systemops.o: systemops.c
 ${OBJECTDIR}/ministatement.o: ministatement.c 
 	${MKDIR} -p ${OBJECTDIR}
 	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/ministatement.o ministatement.c
+
+${OBJECTDIR}/meterdetails.o: meterdetails.c 
+	${MKDIR} -p ${OBJECTDIR}
+	$(COMPILE.c) -g -I/cygdrive/C/Program\ Files/Castles/VEGA3000/include -I/cygdrive/C/Program\ Files\ \(x86\)/Castles/VEGA3000/include -o ${OBJECTDIR}/meterdetails.o meterdetails.c
 
 ${OBJECTDIR}/utilitypay.o: utilitypay.c 
 	${MKDIR} -p ${OBJECTDIR}

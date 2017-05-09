@@ -39,6 +39,7 @@
       <itemPath>balance.c</itemPath>
       <itemPath>cJSON.c</itemPath>
       <itemPath>cardlessdeposit.c</itemPath>
+      <itemPath>checkbalance.c</itemPath>
       <itemPath>curlpost.c</itemPath>
       <itemPath>debug2.c</itemPath>
       <itemPath>deposit.c</itemPath>
@@ -47,6 +48,7 @@
       <itemPath>gsm.c</itemPath>
       <itemPath>jsonbulder.c</itemPath>
       <itemPath>mainmenu.c</itemPath>
+      <itemPath>meterdetails.c</itemPath>
       <itemPath>ministatement.c</itemPath>
       <itemPath>moremenu.c</itemPath>
       <itemPath>paywith.c</itemPath>
@@ -56,6 +58,7 @@
       <itemPath>systemops.c</itemPath>
       <itemPath>ussd.c</itemPath>
       <itemPath>utilitypay.c</itemPath>
+      <itemPath>vendor.c</itemPath>
       <itemPath>withdraw.c</itemPath>
       <itemPath>wub_lib.c</itemPath>
     </logicalFolder>

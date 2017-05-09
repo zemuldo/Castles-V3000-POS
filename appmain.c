@@ -163,7 +163,8 @@ void tryloginadmin(void) {
                 struct string2 s2;
                 init_string(&s2);
 
-                curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/userLogin");
+                //curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/userLogin");
+                curl_easy_setopt(curl, CURLOPT_URL, "http://test.expresspayments.co.ke:8585/v3/login");
                 struct curl_slist *headers = NULL;
                 headers = curl_slist_append(headers, "Accept: application/json");
                 headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -274,7 +275,8 @@ void trylogin_cashier(void) {
                 struct string2 s2;
                 init_string(&s2);
 
-                curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/userLogin");
+                //curl_easy_setopt(curl, CURLOPT_URL, "http://196.216.73.150:9990/familypos/request/userLogin");
+                curl_easy_setopt(curl, CURLOPT_URL, "http://test.expresspayments.co.ke:8585/v3/login");
                 struct curl_slist *headers = NULL;
                 headers = curl_slist_append(headers, "Accept: application/json");
                 headers = curl_slist_append(headers, "Content-Type: application/json");
@@ -327,6 +329,15 @@ void trylogin_cashier(void) {
     }
 }
 
+void contact_us(void) {
+    
+    ClearScreen(4, 26);
+        ShowTitle("CONTACT US                     ");
+    
+    CTOS_LCDTPrintXY(2, 6, "Support@impalapay.com");
+ 
+}
+
 void ShowMessageEvent(BYTE bKernel, EMVCL_USER_INTERFACE_REQ_DATA *stUserInterfaceRequestData) {
     DebugAddSTR("Enter Show Message Event");
 
@@ -362,55 +373,55 @@ void agency_menu(void) {
     while (1) {
         ClearScreen(4, 26);
         ShowTitle("   AGENT MENU                   ");
-        CTOS_LCDTPrintXY(2, 5, "1.A/C Opening");
-        CTOS_LCDTPrintXY(2, 6, "2.Cash Withdrawal");
-        CTOS_LCDTPrintXY(2, 7, "3.Card Deposit");
-        CTOS_LCDTPrintXY(2, 8, "4.Cardless Deposit");
-        CTOS_LCDTPrintXY(2, 9, "5.Ballance Inquiry");
-        CTOS_LCDTPrintXY(2, 10, "6.Agent Ballance");
-        CTOS_LCDTPrintXY(2, 11, "7.Mini Statement");
-        CTOS_LCDTPrintXY(2, 12, "8.Set PIN");
-        CTOS_LCDTPrintXY(2, 13, "9.Revenue Collection");
-        CTOS_LCDTPrintXY(2, 14, "0.Card Utility Pay");
+        CTOS_LCDTPrintXY(2, 5, "1.CHECK BALANCE");
+        CTOS_LCDTPrintXY(2, 6, "2.METER DETAILS");
+        CTOS_LCDTPrintXY(2, 7, "3.Vend Tokens");
+        CTOS_LCDTPrintXY(2, 8, "4.TRANSACTIONS");
+        CTOS_LCDTPrintXY(2, 9, "5.POSTPAID VERIFY BALANCE");
+        CTOS_LCDTPrintXY(2, 10, "6.PAYBILL POSTPAID");
+        CTOS_LCDTPrintXY(2, 11, "7.POSTPAY CHECK TRANSACTIONS");
+        CTOS_LCDTPrintXY(2, 12, "8.PURCHASE AIRTIME");
+        CTOS_LCDTPrintXY(2, 13, "9.CHECK AIRTIME TRANSACTION");
+//        CTOS_LCDTPrintXY(2, 14, "0.Card Utility Pay");
         CTOS_LCDTPrintXY(1, 16, "              X-Back");
 
         CTOS_KBDGet(&key);
 
         switch (key) {
             case '1':
-                create_account();
+                check_balance();
                 break;
-            case '2':
-                Do_Transaction();
-                break;
-
-            case '3':
-                deposit();
-                break;
-
-            case '4':
-                do_transact();
-                break;
-            case '5':;
-                getballance();
-                break;
-
-            case '6':
-                agentgetballance();
-                break;
-
-            case '7':
-                getstatement();
-                break;
-            case '8':
-                changepin();
-                break;
-            case '9':
-                paytransact();
-                break;
-            case '0':
-                dorutilitypay();
-                break;
+//            case '2':
+//                meter_details();
+//                break;
+//
+//            case '3':
+//                vend();
+//                break;
+//
+//            case '4':
+//                do_transact();
+//                break;
+//            case '5':;
+//                getballance();
+//                break;
+//
+//            case '6':
+//                agentgetballance();
+//                break;
+//
+//            case '7':
+//                getstatement();
+//                break;
+//            case '8':
+//                changepin();
+//                break;
+//            case '9':
+//                paytransact();
+//                break;
+//            case '0':
+//                dorutilitypay();
+//                break;
             case d_KBD_CANCEL:
                 return;
                 break;
@@ -450,9 +461,11 @@ void select_id(void) {
         CTOS_LCDTSelectFontSize(d_LCD_FONT_12x24);
 
         CTOS_LCDTPrintXY(4, 5, "Select User ID");
-        CTOS_LCDTPrintXY(4, 6, "1. Admin User");
-        CTOS_LCDTPrintXY(4, 7, "2. Cashier User");
-        CTOS_LCDTPrintXY(4, 8, "3. Settings");
+        CTOS_LCDTPrintXY(4, 6, "1. Administrator Login");
+        CTOS_LCDTPrintXY(4, 7, "2. Vendor Login");
+        CTOS_LCDTPrintXY(4, 8, "3. Contact us");
+        CTOS_LCDTPrintXY(4, 9, "4. Settings");
+        
         CTOS_KBDGet(&key);
         //login admin
         if (key == d_KBD_1) {
@@ -461,7 +474,12 @@ void select_id(void) {
         } else if (key == d_KBD_2) {
             trylogin_cashier();
             break;
+            
         } else if (key == d_KBD_3) {
+            contact_us();
+            break;          
+            
+        }else if (key == d_KBD_4) {
             ClearScreen(4, 26);
             CTOS_LCDTPrintXY(2, 5, "Enter  Setup PIN:");
             if (enter_pin(3, 6, 4, 16, '*', pin, &i) == TRUE) {
@@ -539,7 +557,8 @@ void admin_menu() {
         CTOS_LCDTClearDisplay();
         ShowTitle("ADMINISTRATOR MENU                ");
         CTOS_LCDTPrintXY(3, 5, "1. Agency Menu");
-        CTOS_LCDTPrintXY(3, 6, "2. Create Users");
+        //CTOS_LCDTPrintXY(3, 6, "2. Create Users");
+        CTOS_LCDTPrintXY(3, 6, "2. Check Balance");
         CTOS_LCDTPrintXY(3, 7, "3. Manage User");
         CTOS_LCDTPrintXY(3, 8, "4. Batch Upload");
         CTOS_LCDTPrintXY(3, 9, "5. Reconcl Repots");
@@ -547,12 +566,24 @@ void admin_menu() {
         CTOS_LCDTPrintXY(3, 11, "7. Conn Status");
         CTOS_LCDTPrintXY(3, 12, "8. Settings");
         CTOS_LCDTPrintXY(1, 15, "              X-Logout");
+        
+//        ShowTitle("   AGENT MENU                   ");
+//        CTOS_LCDTPrintXY(2, 5, "1.CHECK BALANCE");
+//        CTOS_LCDTPrintXY(2, 6, "2.METER DETAILS");
+//        CTOS_LCDTPrintXY(2, 7, "3.Vend Tokens");
+//        CTOS_LCDTPrintXY(2, 8, "4.TRANSACTIONS");
+//        CTOS_LCDTPrintXY(2, 9, "5.POSTPAID VERIFY BALANCE");
+//        CTOS_LCDTPrintXY(2, 10, "6.PAYBILL POSTPAID");
+//        CTOS_LCDTPrintXY(2, 11, "7.POSTPAY CHECK TRANSACTIONS");
+//        CTOS_LCDTPrintXY(2, 12, "8.PURCHASE AIRTIME");
+//        CTOS_LCDTPrintXY(2, 13, "9.CHECK AIRTIME TRANSACTION");
         CTOS_KBDGet(&key);
         switch (key) {
             case d_KBD_1:
                 agency_menu();
                 break;
             case d_KBD_2:
+                check_balance();
                 break;
             case d_KBD_3:
                 break;

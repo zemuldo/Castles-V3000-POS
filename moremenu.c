@@ -27,7 +27,7 @@ void moremenu(void) {
 
         switch (key) {
             case '1':
-                dorutilitypay();
+                //dorutilitypay();
                 break;
 
             case '2':

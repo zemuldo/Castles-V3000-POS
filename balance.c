@@ -571,7 +571,8 @@ void getballance(void) {
     //get card details
     getcarddata(&stRCDataEx);
     //SEND REQUEST
-    ballance_post(pin, cardvendor, cardnumber, expdate);
+    //freddy
+//    ballance_post(pin, cardvendor, cardnumber, expdate);
     
     
     return;

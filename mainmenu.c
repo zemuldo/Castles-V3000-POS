@@ -44,7 +44,7 @@ void mainmenu(void) {
                     break;
 
                 case '2':
-                    deposit();
+                    //deposit();
                     break;
 
                 case '3':

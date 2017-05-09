@@ -572,7 +572,8 @@ void agentgetballance(void) {
     //get card details
     getmarchantcarddata(&stRCDataEx);
     //SEND REQUEST
-    ballance_post(pin, mcardvendor, mcardnumber, mexpdate);
+    //freddy
+    //ballance_post(pin, mcardvendor, mcardnumber, mexpdate);
     
     
     return;

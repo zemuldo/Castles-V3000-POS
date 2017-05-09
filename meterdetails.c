@@ -44,14 +44,14 @@
 //BYTE key;
 //char *jsonresponse;
 //
-//void create_account(void) {
+//void meter_details(void) {
 //    BYTE key;
 //    //BYTE baBuff[256];
 //
 //    int x = 0;
 //    while (x == 0) {
 //        ClearScreen(4, 26);
-//        ShowTitle("    Account Opening        ");
+//        ShowTitle(" CHECK VENDOR BALANCE     ");
 //
 //
 //        //Define letter mapping to each key
@@ -412,3 +412,4 @@
 //    sprintf(baBuf, "|| %s || ", jsonresponse);
 //    autoFileWrite(jsonresponse);
 //}
+//
